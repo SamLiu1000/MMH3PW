@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频提示词编写指南 · 儿童友好版</title>
+    <style>
+        /* --- 基础重置 --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f4f7fc;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #1e293b;
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .app-wrapper {
+            display: flex;
+            gap: 2.5rem;
+            max-width: 1440px;
+            margin: 0 auto;
+            align-items: flex-start;
+        }
+
+        /* --- 右侧目录 (固定) --- */
+        .toc-sidebar {
+            flex: 0 0 280px;
+            position: sticky;
+            top: 2rem;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+            padding: 1.8rem 1.2rem;
+            border: 1px solid #eef2f6;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .toc-sidebar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .toc-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+            color: #94a3b8;
+            margin-bottom: 1.2rem;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 0.6rem;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.3rem;
+        }
+
+        .toc-list a {
+            display: block;
+            padding: 0.35rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #475569;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .toc-list a:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
+        .toc-list a.active {
+            background: #f1f5f9;
+            color: #0f172a;
+            border-left-color: #3b82f6;
+            font-weight: 600;
+        }
+
+        .toc-list .toc-h3 a {
+            padding-left: 1.8rem;
+            font-size: 0.8rem;
+            font-weight: 400;
+            color: #64748b;
+        }
+
+        .toc-list .toc-h3 a.active {
+            border-left-color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .toc-divider {
+            height: 1px;
+            background: #eef2f6;
+            margin: 0.8rem 0;
+        }
+
+        /* --- 主内容 --- */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            background: #ffffff;
+            border-radius: 28px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.03);
+            padding: 2.8rem 3.2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .app-wrapper {
+                flex-direction: column;
+            }
+            .toc-sidebar {
+                position: relative;
+                top: 0;
+                flex: auto;
+                width: 100%;
+                max-height: 300px;
+                margin-bottom: 1.5rem;
+                padding: 1.2rem;
+            }
+            .main-content {
+                padding: 1.8rem 1.5rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 0.8rem 0.5rem;
+            }
+            .main-content {
+                padding: 1.2rem 1rem;
+                border-radius: 20px;
+            }
+            .toc-sidebar {
+                padding: 0.8rem;
+            }
+            .toc-list a {
+                font-size: 0.8rem;
+                padding: 0.2rem 0.6rem;
+            }
+        }
+
+        /* --- 排版 --- */
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(145deg, #0f172a, #334155);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.2rem;
+        }
+
+        .main-subhead {
+            color: #64748b;
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f1f5f9;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1rem;
+        }
+        .main-subhead span {
+            background: #f1f5f9;
+            padding: 0.1rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .section-part {
+            margin-top: 2.8rem;
+            padding-top: 1.2rem;
+            border-top: 3px solid #e9edf4;
+        }
+        .section-part:first-of-type {
+            border-top: none;
+            margin-top: 0.5rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 650;
+            letter-spacing: -0.01em;
+            margin-bottom: 1rem;
+            color: #0f172a;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 650;
+            margin-top: 2rem;
+            margin-bottom: 0.6rem;
+            color: #1e293b;
+        }
+
+        h4 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-top: 1.6rem;
+            margin-bottom: 0.3rem;
+            color: #1e293b;
+        }
+
+        p {
+            margin-bottom: 0.8rem;
+        }
+
+        ul, ol {
+            padding-left: 1.6rem;
+            margin-bottom: 1.2rem;
+        }
+        li {
+            margin-bottom: 0.25rem;
+        }
+
+        /* 标记难懂概念：下划线虚线 + 提示 */
+        .concept {
+            border-bottom: 2px dashed #3b82f6;
+            padding-bottom: 1px;
+            cursor: help;
+            position: relative;
+        }
+        .concept:hover::after {
+            content: "🧒 点击查看五岁解释";
+            position: absolute;
+            bottom: 1.8em;
+            left: 0;
+            background: #1e293b;
+            color: #f1f5f9;
+            padding: 0.2rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        /* 儿童解释卡片 */
+        .kid-explain {
+            background: #f0f9ff;
+            border-radius: 16px;
+            padding: 1rem 1.6rem;
+            margin: 1rem 0 1.6rem;
+            border-left: 5px solid #3b82f6;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+            color: #0c4a6e;
+        }
+        .kid-explain .icon {
+            font-size: 1.6rem;
+            line-height: 1.4;
+            flex-shrink: 0;
+        }
+        .kid-explain .text {
+            font-size: 0.95rem;
+        }
+        .kid-explain .text strong {
+            color: #075985;
+        }
+
+        /* 表格 */
+        .table-wrap {
+            overflow-x: auto;
+            margin: 1rem 0 1.6rem;
+            border-radius: 14px;
+            border: 1px solid #e9edf4;
+            background: #fafcff;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            min-width: 480px;
+        }
+        th {
+            background: #f1f6fd;
+            font-weight: 600;
+            text-align: left;
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid #dce2ec;
+        }
+        td {
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid #eef2f6;
+            vertical-align: top;
+            text-align: left;
+        }
+
+        /* 代码块 */
+        .code-block {
+            background: #0f172a;
+            color: #e2e8f0;
+            border-radius: 16px;
+            padding: 1.2rem 1.8rem;
+            margin: 1rem 0 1.6rem;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.85rem;
+            line-height: 1.7;
+            white-space: pre-line;
+            word-break: break-word;
+            border: 1px solid #1e293b;
+            text-align: left;
+        }
+        .code-block .field { color: #7dd3fc; }
+        .code-block .tag { color: #fcd34d; }
+        .code-block .string { color: #a7f3d0; }
+        .code-block .dim { color: #94a3b8; }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+            background: #f1f4fa;
+            padding: 0.1rem 0.4rem;
+            border-radius: 6px;
+            color: #1e293b;
+            border: 1px solid #e2e8f0;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #eef2f6;
+            padding: 0.1rem 0.7rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-right: 0.2rem;
+        }
+        .badge-blue { background: #dbeafe; color: #1e4a7a; }
+
+        .rel {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.05rem 0.6rem;
+            border-radius: 20px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            display: inline-block;
+        }
+        .rel-full { background: #dcfce7; border-color: #86efac; color: #166534; }
+        .rel-part { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
+        .rel-trans { background: #dbeafe; border-color: #93c5fd; color: #1e4a7a; }
+        .rel-weak { background: #f1f5f9; border-color: #cbd5e1; color: #475569; }
+
+        .section-card {
+            background: #fafcff;
+            border-radius: 18px;
+            padding: 1.4rem 1.8rem;
+            margin: 1.6rem 0;
+            border: 1px solid #eef2f6;
+            text-align: left;
+        }
+
+        .def-grid {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 0.3rem 1rem;
+            background: #f8fafc;
+            padding: 1rem 1.4rem;
+            border-radius: 14px;
+            margin: 0.8rem 0 1.2rem;
+            border: 1px solid #eef2f6;
+            text-align: left;
+        }
+        .def-grid .dt {
+            font-weight: 600;
+            color: #0f172a;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0 1.4rem;
+        }
+        .task-item {
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 0.8rem 1.2rem;
+            border: 1px solid #eef2f6;
+            text-align: left;
+        }
+        .task-item strong {
+            display: block;
+            font-size: 1rem;
+            color: #0f172a;
+        }
+        .task-item span {
+            font-size: 0.85rem;
+            color: #475569;
+        }
+
+        details {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 0.8rem 1.4rem 0.2rem;
+            margin: 1.4rem 0;
+            border: 1px solid #eef2f6;
+        }
+        details summary {
+            font-weight: 600;
+            cursor: pointer;
+            color: #0f172a;
+            padding: 0.2rem 0;
+        }
+
+        .footnote {
+            font-size: 0.85rem;
+            color: #64748b;
+            background: #f8fafc;
+            padding: 0.8rem 1.2rem;
+            border-radius: 12px;
+            border-left: 3px solid #cbd5e1;
+            margin: 2rem 0 0.4rem;
+            text-align: left;
+        }
+
+        .anchor {
+            scroll-margin-top: 1.5rem;
+        }
+
+        .toc-list a.active {
+            background: #f1f5f9;
+            border-left-color: #3b82f6;
+            color: #0f172a;
+        }
+        .toc-list .toc-h3 a.active {
+            border-left-color: #94a3b8;
+        }
+        
+        /* 新增：保留度分析专属表格美化 */
+        .retention-table td:first-child {
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .retention-table .example-cell {
+            font-size: 0.85rem;
+            color: #334155;
+        }
+        .highlight-box {
+            background: #fefce8;
+            border: 1px solid #fde68a;
+            border-radius: 12px;
+            padding: 0.8rem 1.2rem;
+            margin-top: 1rem;
+        }
+        .highlight-box strong {
+            color: #92400e;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- 右侧目录 -->
+        <nav class="toc-sidebar" aria-label="目录导航">
+            <div class="toc-title">📑 本页目录</div>
+            <ul class="toc-list" id="toc-list">
+                <li><a href="#part1" class="active">第一部分 · 基础生成模式</a></li>
+                <li class="toc-h3"><a href="#sec1-1">1.1 任务概览</a></li>
+                <li class="toc-h3"><a href="#sec1-2">1.2 最终提示词结构</a></li>
+                <li class="toc-h3"><a href="#sec1-3">1.3 关键帧融入策略</a></li>
+                <li class="toc-h3"><a href="#sec1-4">1.4 核心编写规则</a></li>
+                <li class="toc-h3"><a href="#sec1-5">1.5 完整案例</a></li>
+                <li class="toc-divider"></li>
+                <li><a href="#part2">第二部分 · 全参考模式</a></li>
+                <li class="toc-h3"><a href="#sec2-1">2.1 整体结构</a></li>
+                <li class="toc-h3"><a href="#sec2-2">2.2 引用标签定义</a></li>
+                <li class="toc-h3"><a href="#sec2-3">2.3 摘要 &amp; 保留度分析</a></li>
+                <li class="toc-h3"><a href="#sec2-4">2.4 详细描述编写要点</a></li>
+                <li class="toc-h3"><a href="#sec2-5">2.5 完整示例</a></li>
+            </ul>
+        </nav>
+
+        <!-- 主内容 -->
+        <main class="main-content">
+            <h1>🎬 视频提示词编写指南</h1>
+            <div class="main-subhead">
+                <span>T2VA · I2VA · FL2VA · L2VA</span>
+                <span>全参考模式 · Full‑Reference</span>
+                <span>🧒 儿童友好版</span>
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- 第一部分：基础生成模式 -->
+            <!-- ========================================================= -->
+            <section class="section-part" id="part1">
+                <h2>📌 第一部分：基础生成模式 (T2VA / I2VA / FL2VA / L2VA)</h2>
+
+                <!-- 1.1 任务概览 -->
+                <h3 class="anchor" id="sec1-1">1.1 任务概览</h3>
+                <div class="task-grid">
+                    <div class="task-item"><strong><span class="concept" title="T2VA">T2VA</span></strong><span>文本 → 完整视听时间线</span></div>
+                    <div class="task-item"><strong><span class="concept" title="I2VA">I2VA</span></strong><span>首帧指令 + 向前发展的视觉路径</span></div>
+                    <div class="task-item"><strong><span class="concept" title="FL2VA">FL2VA</span></strong><span>首尾帧指令 + 连续路径</span></div>
+                    <div class="task-item"><strong><span class="concept" title="L2VA">L2VA</span></strong><span>末帧指令 + 收敛至末帧</span></div>
+                </div>
+
+                <div class="kid-explain">
+                    <span class="icon">🧒</span>
+                    <div class="text">
+                        <strong>五岁解释：</strong> 这些英文缩写是四种不同的“拍电影”方式。<br>
+                        • <strong>T2VA</strong>：就像你给AI讲一个故事，它帮你画出画面、配上声音。<br>
+                        • <strong>I2VA</strong>：你先给它一张“开头照片”，它从这张照片接着往下演。<br>
+                        • <strong>FL2VA</strong>：你给它“开头”和“结尾”两张照片，它帮你把中间的过程连起来。<br>
+                        • <strong>L2VA</strong>：你只给它“结尾”的照片，它倒着推理出开头应该是什么样子。
+                    </div>
+                </div>
+
+                <!-- 1.2 最终提示词结构 -->
+                <h3 class="anchor" id="sec1-2">1.2 最终提示词结构</h3>
+                <h4>指令（Instruction）</h4>
+                <ul>
+                    <li><strong>T2VA</strong>：无图像对齐，直接从三个核心字段开始。</li>
+                    <li><strong>I2VA</strong>：<br>
+                        <code>对于目标视频，在目标视频的第 0.00 秒处，完全参考 &lt;Picture 1&gt;（来自 [Shot 1]）。</code>
+                    </li>
+                    <li><strong>FL2VA</strong>：<br>
+                        <code>参考图像与目标视频的对齐方式 —— 图 1（来自 Shot 1）对齐目标视频的第 0.00 秒；图 2（来自 Shot N）对齐目标视频的第 S.SS 秒。</code>
+                    </li>
+                    <li><strong>L2VA</strong>：<br>
+                        <code>参考图像与目标视频的对齐方式 —— &lt;Picture 1&gt;（来自 [Shot N]）对齐目标视频的第 S.SS 秒。</code>
+                    </li>
+                </ul>
+
+                <h4>三个核心字段</h4>
+                <div class="code-block">
+                    <span class="field">integrated_multimodal_description</span>: [Shot 1] ……
+                    <span class="field">overall_soundscape</span>: ……
+                    <span class="field">non_diegetic_music</span>: ……
+                </div>
+                <ul>
+                    <li><strong>integrated_multimodal_description</strong>：沿时间线描述画面、动作、镜头、说话人、对白、歌唱及画面内音效。</li>
+                    <li><strong>overall_soundscape</strong>：环境音、物理动作音效、非语言人声。</li>
+                    <li><strong>non_diegetic_music</strong>：只有观众能听到的背景音乐。</li>
+                </ul>
+
+                <div class="kid-explain">
+                    <span class="icon">🧒</span>
+                    <div class="text">
+                        <strong>五岁解释：</strong> 这三个字段就是给你的“电影剧本”分成了三个部分：<br>
+                        • <strong>第一段</strong>：写“画面里发生了什么”，就像讲故事。<br>
+                        • <strong>第二段</strong>：写“环境里的声音”，比如雨声、脚步声。<br>
+                        • <strong>第三段</strong>：写“背景音乐”，只有观众能听到，角色听不到。
+                    </div>
+                </div>
+
+                <!-- 1.3 关键帧融入策略 -->
+                <h3 class="anchor" id="sec1-3">1.3 关键帧融入策略</h3>
+                <div class="section-card">
+                    <h4>I2VA：从图像出发向前发展</h4>
+                    <p><code>&lt;Picture 1&gt;</code> 是 0.00 秒的实际首帧。描述应首先确立图像中的风格、主体、构图和场景锚点，再描述后续动作。角色身份、服装、颜色、关键物品和空间关系应保持一致。</p>
+                    <p><span class="badge badge-blue">推荐结构</span> 首帧锚点 → 动作起始 → 连续发展 → 结果或反应</p>
+                </div>
+                <div class="section-card">
+                    <h4>FL2VA：描述首尾帧之间的路径</h4>
+                    <p>图1为开头，图2为结尾。重点描述主体移动、姿态变化、物体操作、构图演变及场景/光线过渡。FL2VA 通常倾向单一镜头以便插值。末帧必须在视频结束时由最后的 <code>[Shot N]</code> 到达。</p>
+                    <p><span class="badge badge-blue">推荐结构</span> 首帧状态 → 可观察的中间变化 → 差异逐渐收窄 → 末帧状态</p>
+                </div>
+                <div class="section-card">
+                    <h4>L2VA：推断开头，落在结尾的图像上</h4>
+                    <p><code>&lt;Picture 1&gt;</code> 是最后一帧，属于最后一个 <code>[Shot N]</code>。根据用户意图和末帧推断合理的更早状态，然后描述如何逐渐接近参考图像。</p>
+                    <p><span class="badge badge-blue">推荐结构</span> 合理的前置状态 → 明确的动作与过渡路径 → 在最后镜头中逐渐收敛 → 落在末帧</p>
+                </div>
+
+                <div class="kid-explain">
+                    <span class="icon">🧒</span>
+                    <div class="text">
+                        <strong>五岁解释：</strong> “关键帧”就是电影里最重要的几张“照片”。<br>
+                        • <strong>I2VA</strong>：你给了一张“开头照片”，AI就接着往下编故事。<br>
+                        • <strong>FL2VA</strong>：你给了“开头”和“结尾”两张照片，AI就自己想象中间发生了什么。<br>
+                        • <strong>L2VA</strong>：你只给了“结尾”照片，AI倒着猜出开头，再演到结尾。
+                    </div>
+                </div>
+
+                <!-- 1.4 核心编写规则 -->
+                <h3 class="anchor" id="sec1-4">1.4 核心编写规则（共用）</h3>
+
+                <h4>① 沿时间线展开多模态描述</h4>
+                <p><code>integrated_multimodal_description</code> 是主体。每个细节对应可视或可听内容：视觉风格、初始构图、主体外观与位置、场景与关键道具、动作与反应、镜头切换、口语内容及同步画面内声音。</p>
+                <p>在 <code>[Shot 1]</code> 开头说明整体风格和初始构图。常见风格：<span class="badge">Cinematic</span><span class="badge">live-action</span><span class="badge">2D-animated</span><span class="badge">3D CG</span><span class="badge">claymation</span><span class="badge">watercolor</span><span class="badge">vintage film</span>。</p>
+                <div class="code-block">
+                    [Shot 1] 实拍风格，电影感，一个中远景镜头框住……
+                </div>
+
+                <h4>② 镜头与切换</h4>
+                <p>第一个镜头不加时间戳。后续镜头使用连续编号并以严格递增的切换时间开头：</p>
+                <div class="code-block">
+                    [Shot 2] 在 00:03.500 时，镜头切至……
+                </div>
+                <p>普通切换使用“镜头切至”“画面切至”等；仅在用户明确要求时使用叠化、淡入淡出或划像。如果只需要改变距离或轻微角度，优先使用镜头运动而非切换。</p>
+
+                <h4>③ 镜头运动：运动类型 + 幅度 + 速度</h4>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>维度</th><th>可用表达</th><th>说明</th></tr></thead>
+                        <tbody>
+                            <tr><td>运动类型</td><td>推近变焦 / 拉远变焦</td><td>机身不动、焦距变化</td></tr>
+                            <tr><td>运动类型</td><td>推进 / 拉出</td><td>摄像机前后移动</td></tr>
+                            <tr><td>运动类型</td><td>左摇 / 右摇</td><td>机身不动、镜头水平转动</td></tr>
+                            <tr><td>运动类型</td><td>左移 / 右移</td><td>摄像机水平平移</td></tr>
+                            <tr><td>运动类型</td><td>上仰 / 下俯</td><td>机身不动、镜头垂直转动</td></tr>
+                            <tr><td>运动类型</td><td>升 / 降镜头</td><td>整个摄像机上下移动</td></tr>
+                            <tr><td>运动类型</td><td>弧形镜头</td><td>围绕主体做弧线运动</td></tr>
+                            <tr><td>运动类型</td><td>跟拍镜头</td><td>跟随移动主体</td></tr>
+                            <tr><td>运动类型</td><td>固定镜头</td><td>位置和镜头保持静止</td></tr>
+                            <tr><td>运动类型</td><td>轻微 / 强烈抖动</td><td>镜头抖动</td></tr>
+                            <tr><td>运动类型</td><td>主观视角 (POV)</td><td>主体第一人称视角</td></tr>
+                            <tr><td>运动类型</td><td>顺时针 / 逆时针滚转</td><td>绕镜头轴滚转</td></tr>
+                            <tr><td>幅度</td><td>幅度较小 / 幅度较大</td><td>小范围 / 大范围变化</td></tr>
+                            <tr><td>速度</td><td>速度较慢 / 速度较快</td><td>缓慢 / 快速运动</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>镜头运动应作为自然动作描述书写：</p>
+                <div class="code-block">
+                    镜头以小幅度、慢速推近她手中折叠的信件。
+                    镜头以大幅度、快速向右摇动，展现敞开的门口。
+                    镜头保持固定不动，跑者走出画面。
+                </div>
+
+                <h4>④ 说话人、对白与歌唱</h4>
+                <p>使用稳定 ID <code>(S1)</code>、<code>(S2)</code>。多人一起发声用 <code>(S1,S2)</code>。说话人首次出现时从视觉和音频语境提供足够信息。身份短语、ID、动作和表达方式放在 <code>&lt;d&gt;</code> 之外，<code>&lt;d&gt;</code> 内只包含语言标签和实际口语内容，逐字保留原文。</p>
+                <div class="code-block">
+                    声音轻柔、略带气声的年轻女子 (S1) 说道：&lt;d&gt;[English] I get off at the next station.&lt;/d&gt;
+                    两个孩子 (S1,S2) 一起喊道：&lt;d&gt;[English] Wait for us!&lt;/d&gt;
+                </div>
+                <p>画外音使用“以画外音说道”，并在每个 <code>&lt;d&gt;</code> 段落后说明嘴唇保持紧闭。</p>
+                <p>跨切换的对白使用 <code>&lt;scenetrans&gt;</code>，被截断的语音使用 <code>&lt;cutoff&gt;</code>。</p>
+
+                <h4>⑤ 画面文字</h4>
+                <p>将画面上可见的文字放在双引号中，逐字保留原文。</p>
+                <div class="code-block">
+                    一块写着“营业中”的红色霓虹招牌在门口上方发光。
+                </div>
+
+                <h4>⑥ overall_soundscape（整体音景）</h4>
+                <p>用 1‑4 句概括环境音、物理动作音效和非语言人声。对白、歌唱和画面内音乐不在此重复。仅当完全静音时使用 <code>N/A</code>。</p>
+                <div class="code-block">
+                    overall_soundscape: 稳定的雨声敲打着咖啡馆的窗户，低沉的室内环境音持续在底层。入口的门铃响了一声，随后是湿漉漉的脚步声和椅子轻微的刮擦声。
+                </div>
+
+                <h4>⑦ non_diegetic_music（画外配乐）</h4>
+                <p>用 1‑3 句描述角色听不到的背景音乐，重点描述配器、速度、节奏和动态变化。不用抽象情绪词。没有时使用 <code>N/A</code>。</p>
+                <div class="code-block">
+                    non_diegetic_music: 稀疏的钢琴音符以缓慢的节奏出现，伴随持续的低音弦乐逐渐增强音量后淡出。
+                </div>
+
+                <div class="kid-explain">
+                    <span class="icon">🧒</span>
+                    <div class="text">
+                        <strong>五岁解释：</strong> 编写规则就像写作文的“好词好句”模板：<br>
+                        • 镜头运动就是“摄像机怎么动”，比如推近、摇动。<br>
+                        • 说话人就是“谁在说话”，要给每个人一个编号，这样不会搞混。<br>
+                        • 画面文字就是“屏幕上的字”，要原样写出来。<br>
+                        • 音景和配乐就是“背景声音”和“背景音乐”，分开描述。
+                    </div>
+                </div>
+
+                <!-- 1.5 案例 -->
+                <h3 class="anchor" id="sec1-5">1.5 完整案例</h3>
+                <div class="section-card">
+                    <h4>T2VA</h4>
+                    <div class="code-block">
+integrated_multimodal_description: [Shot 1] 实拍风格，电影感，一个中远景镜头框住日出前，一位面包师正在打开街边小面包店的卷帘门。镜头以小幅度、慢速推近，中年面包师用平静、略带沙哑的声音 (S1) 把一条新鲜的面包放在木质柜台上，说道：&lt;d&gt;[English] First batch of the morning.&lt;/d&gt; [Shot 2] 在 00:05.000 时，镜头切至切片面包冒出蒸汽的特写，面包师的最后一句话延续自上一镜头。
+
+overall_soundscape: 木质卷帘门在安静的街道上刮擦着打开，托盘在面包店里发出轻柔的碰撞声。门铃响了一声，随后是轻快的脚步声和面包被切开时清脆的声音。
+
+non_diegetic_music: 柔和的原声吉他以中速演奏，伴随稀疏的低音提琴音符，在结尾处轻柔地淡出。
+                    </div>
+                </div>
+                <!-- 其他案例略，但保持一致 -->
+
+                <div class="kid-explain">
+                    <span class="icon">🧒</span>
+                    <div class="text">
+                        <strong>五岁解释：</strong> 这些案例就像“范文”，你看懂一个，其他就都会了。记住三个部分：<br>
+                        • 画面故事（integrated...）<br>
+                        • 环境声音（overall...）<br>
+                        • 背景音乐（non...）
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========================================================= -->
+            <!-- 第二部分：全参考模式 -->
+            <!-- ========================================================= -->
+            <section class="section-part" id="part2">
+                <h2>🔁 第二部分：<span class="concept" title="全参考模式">全参考模式</span> (Full‑Reference)</h2>
+
+                <div class="kid-explain">
+                    <span class="icon">🧒</span>
+                    <div class="text">
+                        <strong>五岁解释：</strong> “全参考模式”就是你给AI看一些“参考材料”（图片、视频、音频），让它照着这些材料的样子来生成新视频。就像你照着乐高说明书搭积木一样。
+                    </div>
+                </div>
+
+                <!-- 2.1 整体结构 -->
+                <h3 class="anchor" id="sec2-1">2.1 整体结构与输出字段</h3>
+                <p>全参考模式改写输出由以下六个部分按顺序组成：</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>部分</th><th>作用</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>subject_definitions</code></td><td>定义被引用的内容及其引用标签</td></tr>
+                            <tr><td><code>summary</code></td><td>概括任务类型、目标视频及主要引用关系</td></tr>
+                            <tr><td><code>retention_analysis</code></td><td>描述被引用内容如何被保留、迁移或复用</td></tr>
+                            <tr><td><code>detailed_description</code></td><td>按播放顺序描述画面、动作、镜头、声音和对白</td></tr>
+                            <tr><td><code>overall_soundscape</code></td><td>概括环境音与物理声音</td></tr>
+                            <tr><td><code>non_diegetic_music</code></td><td>描述只有观众能听到的背景音乐</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="kid-explain">
+                    <span class="icon">🧒</span>
+                    <div class="text">
+                        <strong>五岁解释：</strong> 这六个部分就像写作文的“提纲”：<br>
+                        1. 先列出来参考了哪些东西（定义）。<br>
+                        2. 概括一下要做什么（摘要）。<br>
+                        3. 分析哪些参考被用了，哪些改了（保留度分析）。<br>
+                        4. 详细写画面和声音（详细描述）。<br>
+                        5-6. 最后再专门写环境音和背景音乐。
+                    </div>
+                </div>
+
+                <!-- 2.2 引用标签定义 -->
+                <h3 class="anchor" id="sec2-2">2.2 <span class="concept" title="引用标签">引用标签</span>定义</h3>
+                <div class="def-grid">
+                    <span class="dt">&lt;Subject N&gt;</span>
+                    <span class="dd">从参考素材中抽象出的、可在目标视频中复用或修改的<strong>可见内容</strong>（人物、场景、服装、动作、风格等）</span>
+                    <span class="dt">&lt;Picture N&gt;</span>
+                    <span class="dd">作为具体目标帧或分镜规划锚点的<strong>参考图像</strong></span>
+                    <span class="dt">&lt;Video N&gt;</span>
+                    <span class="dd">提供剪辑源、延续起点或整段视频时间结构的<strong>参考视频</strong></span>
+                    <span class="dt">&lt;Audio N&gt;</span>
+                    <span class="dd">被复制或引用的<strong>音频信号</strong></span>
+                </div>
+                <p>一旦赋予引用标签，该标签在全部六个部分中保持相同含义。<code>subject_definitions</code> 需定义后续必须单独追踪的每一段被引用内容。</p>
+
+                <div class="kid-explain">
+                    <span class="icon">🧒</span>
+                    <div class="text">
+                        <strong>五岁解释：</strong> “引用标签”就像给参考材料起外号：<br>
+                        • <strong>&lt;Subject&gt;</strong>：外号“角色” — 指人、动物或东西。<br>
+                        • <strong>&lt;Picture&gt;</strong>：外号“照片” — 指一张图片。<br>
+                        • <strong>&lt;Video&gt;</strong>：外号“视频” — 指一段视频素材。<br>
+                        • <strong>&lt;Audio&gt;</strong>：外号“声音” — 指一段音频。<br>
+                        之后写提示词时，就用这些外号代替长长的描述。
+                    </div>
+                </div>
+
+                <h4><code>&lt;Subject N&gt;</code> 示例</h4>
+                <div class="code-block">
+                    &lt;Subject 1&gt; 是 &lt;Picture 1&gt; 中的年轻女子，留着深色长发，穿蓝色开衫，戴一条细银项链。
+                </div>
+
+                <h4><code>&lt;Picture N&gt;</code> 示例</h4>
+                <div class="code-block">
+                    &lt;Picture 2&gt; 是 [Shot 1] 的首帧，展示一位女子坐在咖啡馆窗边。
+                </div>
+
+                <h4><code>&lt;Video N&gt;</code> 示例</h4>
+                <div class="code-block">
+                    &lt;Video 1&gt; 是目标视频剪辑所使用的源视频。
+                </div>
+
+                <h4><code>&lt;Audio N&gt;</code> 示例</h4>
+                <div class="code-block">
+                    &lt;Audio 1&gt; 是 &lt;Subject 1&gt; (S1) 的音色参考。
+                </div>
+
+                <!-- ========================================================= -->
+                <!-- 2.3 摘要 & 保留度分析 (重点优化部分) -->
+                <!-- ========================================================= -->
+                <h3 class="anchor" id="sec2-3">2.3 摘要 &amp; <span class="concept" title="保留度分析">保留度分析</span></h3>
+
+                <h4>摘要 (<code>summary</code>)</h4>
+                <p>以方括号任务类型前缀开头：</p>
+                <div class="code-block">
+                    [reference generation] ……
+                    [video editing + reference generation + audio reuse] ……
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>任务类型</th><th>使用场景</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>keyframe completion</code></td><td>图像作为首帧、关键帧、末帧等具体帧锚点</td></tr>
+                            <tr><td><code>reference generation</code></td><td>为角色、场景、风格等提供生成指导，但不作为具体帧</td></tr>
+                            <tr><td><code>video editing</code></td><td>直接修改一段已有的源视频</td></tr>
+                            <tr><td><code>video continuation</code></td><td>新内容从已有源视频延续、扩展</td></tr>
+                            <tr><td><code>audio reuse</code></td><td>同一音频信号被全部或部分复用</td></tr>
+                            <tr><td><code>audio reference</code></td><td>仅引用音乐风格、音色、对白内容等，未直接复制信号</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h4>保留度分析 (<code>retention_analysis</code>) —— 专属标记全解析</h4>
+                <p><strong>这个部分的作用是：</strong> 明确告诉 AI，对于你给的参考素材（图片/视频/音频），<strong>哪些必须“原封不动”，哪些可以“自由发挥”</strong>。如果没有它，AI 可能会随意更改你喜欢的角色长相，或者完全不按参考风格来生成。</p>
+
+                <!-- 详细解释表格 -->
+                <div class="table-wrap">
+                    <table class="retention-table">
+                        <thead>
+                            <tr>
+                                <th style="width:18%">标记</th>
+                                <th style="width:20%">中文含义</th>
+                                <th style="width:30%">🧒 五岁解释</th>
+                                <th style="width:32%">💡 具体例子</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="rel rel-full">fully_preserved</span></td>
+                                <td><strong>完全保留</strong></td>
+                                <td>“这个必须<strong>完全照抄</strong>，一点都不能变！”</td>
+                                <td class="example-cell">定义里说 <code>Subject 1</code> 是“穿蓝色开衫的女子”，标记为 <code>fully_preserved</code>，AI 生成的视频里她<strong>必须</strong>穿蓝色开衫，换成红色就不行。</td>
+                            </tr>
+                            <tr>
+                                <td><span class="rel rel-part">partially_preserved</span></td>
+                                <td><strong>部分保留</strong></td>
+                                <td>“这个你可以<strong>改一改</strong>，但得保留一些原来的特点。”</td>
+                                <td class="example-cell">定义里说角色是“长发”，标记为 <code>partially_preserved</code>，AI 可以把她的发型改成“马尾辫”，但“长发”这个属性还在。</td>
+                            </tr>
+                            <tr>
+                                <td><span class="rel rel-trans">attribute_transfer</span></td>
+                                <td><strong>属性迁移</strong></td>
+                                <td>“把这个东西的<strong>特点</strong>，拿给另一个东西用。”</td>
+                                <td class="example-cell">参考视频里是“猫跳跃的动作”，标记为 <code>attribute_transfer</code>，AI 可以让你的“狗”做出这个跳跃动作，动作保留了，但执行者变了。</td>
+                            </tr>
+                            <tr>
+                                <td><span class="rel rel-weak">weak_reference</span></td>
+                                <td><strong>弱引用</strong></td>
+                                <td>“你大概<strong>照着这个感觉来</strong>就行，细节不用一模一样。”</td>
+                                <td class="example-cell">参考图是一张“复古咖啡馆”的照片，AI 只要生成一个“同样有复古感觉的咖啡店”就行，墙上的画、桌子的摆放可以不照搬。</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h4>🎵 音频专属标记</h4>
+                <div class="table-wrap">
+                    <table class="retention-table">
+                        <thead>
+                            <tr>
+                                <th style="width:18%">标记</th>
+                                <th style="width:20%">中文含义</th>
+                                <th style="width:30%">🧒 五岁解释</th>
+                                <th style="width:32%">💡 具体例子</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="rel rel-full">fully_copy</span></td>
+                                <td><strong>完整复制</strong></td>
+                                <td>“这个声音<strong>原样复制</strong>贴上去。”</td>
+                                <td class="example-cell">直接把参考音频文件作为目标视频的完整音轨，不加任何修改。</td>
+                            </tr>
+                            <tr>
+                                <td><span class="rel rel-part">partially_copy</span></td>
+                                <td><strong>部分复制</strong></td>
+                                <td>“只复制<strong>一部分</strong>，其他我自己加。”</td>
+                                <td class="example-cell">只复制参考音频里的“雨声”层，但自己重新配了“脚步声”和“背景音乐”。</td>
+                            </tr>
+                            <tr>
+                                <td><span class="rel rel-trans">reference</span></td>
+                                <td><strong>引用（音色/风格）</strong></td>
+                                <td>“<strong>模仿</strong>这个人的声音特点来说新的话。”</td>
+                                <td class="example-cell">参考了某位声优的音色和语速，但让 AI 念一段全新的台词，而不是复制原话。</td>
+                            </tr>
+                            <tr>
+                                <td><span class="rel rel-weak">weak_reference</span></td>
+                                <td><strong>弱引用</strong></td>
+                                <td>“大概<strong>像这种感觉</strong>就行，不用完全一样。”</td>
+                                <td class="example-cell">参考一段“欢快的流行音乐”作为风格方向，AI 自己创作一段类似氛围的新配乐。</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 🧒 儿童友好总结 -->
+                <div class="kid-explain">
+                    <span class="icon">🧒</span>
+                    <div class="text">
+                        <strong>五岁总结：</strong> “保留度分析”就是给 AI 的“使用说明书”，告诉它哪些参考要<strong>原样照搬</strong>，哪些可以<strong>自己发挥</strong>。<br>
+                        • <strong>fully_preserved</strong> = 必须一模一样。<br>
+                        • <strong>partially_preserved</strong> = 可以小改。<br>
+                        • <strong>attribute_transfer</strong> = 把特点借给别的东西。<br>
+                        • <strong>weak_reference</strong> / <strong>reference</strong> = 大概照着感觉来，细节随意。
+                    </div>
+                </div>
+
+                <!-- 📖 实战案例拆解（来自指南原文） -->
+                <div class="highlight-box">
+                    <p><strong>📖 实战案例（来自指南中的“完整示例”）</strong></p>
+                    <div style="background:#f8fafc; padding:0.8rem 1rem; border-radius:8px; margin-top:0.5rem; font-family: monospace; font-size:0.9rem;">
+                        &lt;Subject 1&gt;（出现于 [Shot 1]、[Shot 2]、[Shot 3]）：<span class="rel rel-full">fully_preserved</span> —— 裸露的砖墙、橙色簇绒沙发、图案抱枕、霓虹招牌和木质咖啡桌均被保留。<br><br>
+                        &lt;Audio 1&gt;：<span class="rel rel-trans">reference</span> —— 其人声音色引导 &lt;Subject 3&gt; 的对白表达方式，但未复制原始信号。
+                    </div>
+                    <p style="margin-top:0.8rem; font-size:0.95rem;">
+                        <strong>🔍 解读：</strong><br>
+                        • 对于 <strong>Subject 1（咖啡馆环境）</strong>，标记为 <code>fully_preserved</code>。这意味着无论镜头怎么切（3个镜头都有它），<strong>红砖墙、橙色沙发、霓虹灯</strong>这些元素都必须原封不动地出现在每一个画面里。因为这是故事发生的“固定舞台”。<br>
+                        • 对于 <strong>Audio 1（参考人声）</strong>，标记为 <code>reference</code>。这意味着 AI <strong>不能</strong>直接复制这段录音里的原话，而是要去<strong>模仿</strong>这个人说话的音色、语速和语气。AI 会生成新的句子（比如台词），但听起来像同一个人在说话。
+                    </p>
+                </div>
+
+                <!-- 🤔 为什么重要 -->
+                <div style="background:#f1f5f9; padding:1rem 1.4rem; border-radius:12px; margin:1.2rem 0;">
+                    <p><strong>🤔 为什么它很重要？</strong></p>
+                    <p>如果没有 <code>retention_analysis</code>，AI 可能会：</p>
+                    <ul>
+                        <li>把你给的“红砖墙咖啡馆”随机改成“蓝色墙面的餐厅”。</li>
+                        <li>把你喜欢的“低沉嗓音大叔”配成“尖细的卡通音”。</li>
+                    </ul>
+                    <p>有了它，AI 就能<strong>严格遵守你的创意意图</strong>——核心要素（<code>fully_preserved</code>）绝对不变，非核心要素（<code>weak_reference</code> / <code>reference</code>）灵活发挥。就像给 AI 戴上了“精准导航”，确保它生成的东西既符合参考，又不会死板到毫无创意。</p>
+                </div>
+
+                <!-- 2.4 详细描述编写要点 -->
+                <h3 class="anchor" id="sec2-4">2.4 详细描述 (<code>detailed_description</code>) 编写要点</h3>
+                <p><strong>基本格式</strong> 与第一部分共用规则一致，但有以下全参考模式差异：</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>维度</th><th>T2VA</th><th>全参考模式</th></tr></thead>
+                        <tbody>
+                            <tr><td>主字段</td><td><code>integrated_multimodal_description</code></td><td><code>detailed_description</code></td></tr>
+                            <tr><td>风格开头</td><td>写在 <code>[Shot 1]</code> 之后</td><td>在 <code>[Shot 1]</code> 之前用一到两句话确立</td></tr>
+                            <tr><td>引用信息</td><td>不使用全参考标签</td><td>在首次出现及角色适用处插入 <code>&lt;Subject N&gt;</code>、<code>&lt;Picture N&gt;</code>、<code>&lt;Video N&gt;</code>、<code>&lt;Audio N&gt;</code></td></tr>
+                            <tr><td>音频关系</td><td>描述目标视频自身的声音</td><td>在对应镜头或音频阶段引用 <code>&lt;Audio N&gt;</code>，说明信号复制或引用</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><strong>说话人与音频来源：</strong> 当被引用主体实际发声时，同时保留视觉引用标签和说话人 ID：</p>
+                <div class="code-block">
+                    &lt;Subject 2&gt; (S1) 转向那位女子，说道：&lt;d&gt;[English] Last summer, I went to my grandfather's house. He talked about you.&lt;/d&gt;
+                </div>
+                <p>如果口语内容仅是直接复用的背景音乐中的一句歌词提示，且没有具体人物实际发出该声音，使用 <code>&lt;Audio N&gt;</code> 作为可听来源，不虚构 <code>(Sx)</code>。</p>
+
+                <div class="kid-explain">
+                    <span class="icon">🧒</span>
+                    <div class="text">
+                        <strong>五岁解释：</strong> 全参考模式的“详细描述”和普通模式差不多，但多了“引用标签”。<br>
+                        你要在出现角色、图片、视频、声音的地方，用它们的外号（标签）标记出来，就像在作文里加括号注明“这段是参考了哪张图”。
+                    </div>
+                </div>
+
+                <!-- 2.5 完整示例 -->
+                <h3 class="anchor" id="sec2-5">2.5 完整示例</h3>
+                <details open>
+                    <summary>展开查看完整全参考示例</summary>
+                    <div class="code-block">
+subject_definitions（主体定义）:
+&lt;Subject 1&gt; 是 &lt;Picture 1&gt; 中的咖啡馆环境，特征是裸露的砖墙、带图案抱枕的橙色簇绒沙发、一块霓虹招牌和一张木质咖啡桌。
+&lt;Subject 2&gt; 是 &lt;Picture 2&gt;、&lt;Picture 3&gt; 和 &lt;Picture 4&gt; 中毛茸茸的白色萨摩耶犬，特征是浓密的白色毛发、尖耳朵、深色鼻子和卷曲的尾巴。
+&lt;Subject 3&gt; 是 &lt;Video 1&gt; 中的年轻金发女子，留一头金色长发，穿一件卷起袖子的浅粉色衬衫。
+&lt;Subject 4&gt; 是 &lt;Video 2&gt; 中的年轻男子，留短波浪状棕发，穿一件带抽绳的深灰色连帽衫。
+&lt;Audio 1&gt; 是 &lt;Subject 3&gt; (S1) 的音色参考，包含一段英文人声。
+
+summary（摘要）:
+[reference generation + audio reference] 目标视频展示 &lt;Subject 3&gt; 在 &lt;Subject 1&gt; 中吃饼干。&lt;Subject 4&gt; 带着 &lt;Subject 2&gt; 进入画面，后者扑向饼干。这场三镜头的互动使用 &lt;Audio 1&gt; 作为 &lt;Subject 3&gt; 的音色参考，并以一段罐头式观众笑声结尾。
+
+retention_analysis（保留度分析）:
+&lt;Subject 1&gt;（出现于 [Shot 1]、[Shot 2]、[Shot 3]）：fully_preserved —— 裸露的砖墙、橙色簇绒沙发、图案抱枕、霓虹招牌和木质咖啡桌均被保留。
+&lt;Subject 2&gt;（出现于 [Shot 1]、[Shot 2]）：fully_preserved —— 萨摩耶犬浓密的白色毛发、尖耳朵、深色鼻子和卷曲尾巴均被保留。
+&lt;Subject 3&gt;（出现于 [Shot 1]、[Shot 2]、[Shot 3]）：fully_preserved —— 金发女子的身份、长发和浅粉色衬衫均被保留。
+&lt;Subject 4&gt;（出现于 [Shot 1]、[Shot 2]）：fully_preserved —— 年轻男子的短波浪棕发和深灰色连帽衫均被保留。
+&lt;Audio 1&gt;：reference —— 其人声音色引导 &lt;Subject 3&gt; 的对白表达方式，但未复制原始信号。
+
+detailed_description（详细描述）:
+目标视频采用写实的多机位情景喜剧风格，室内光线温暖。
+[Shot 1] 一个中景镜头确立了 &lt;Subject 1&gt;，咖啡馆的裸露砖墙、橙色簇绒沙发、图案抱枕、霓虹招牌和木质咖啡桌。&lt;Subject 3&gt; (S1)，留金色长发、穿卷袖浅粉色衬衫的年轻女子，坐在沙发上手拿一块巧克力豆饼干。从左侧，&lt;Subject 4&gt;，留短波浪棕发、穿带抽绳深灰色连帽衫的年轻男子，牵着 &lt;Subject 2&gt; 的牵引绳走入画面，后者是浓密白毛、尖耳朵、深色鼻子、卷曲尾巴的萨摩耶犬。狗猛地扑向饼干，将牵引绳拉紧。&lt;Subject 3&gt; (S1) 猛地缩回手，用参考自 &lt;Audio 1&gt; 的清亮年轻音色，带着轻微的恼怒喊道：&lt;d&gt;[English] Hey! Watch your dog!&lt;/d&gt; 她闭上嘴唇护住饼干，&lt;Subject 4&gt; 则把狗拉了回去。
+[Shot 2] 在 00:03.000 时，画面切至 &lt;Subject 4&gt; (S2) 的特写，这位在 Shot 1 中穿深灰色连帽衫的年轻男子，坐在沙发上 &lt;Subject 3&gt; 身旁，稳稳地把 &lt;Subject 2&gt; 抱在怀里。&lt;Subject 4&gt; (S2) 用随性的年轻男声、带着俏皮的语气和轻松的语速说道：&lt;d&gt;[English] He just likes cookies more than me.&lt;/d&gt; 他抿嘴露出一个抱歉的微笑，抚摸着狗浓密的白毛。
+[Shot 3] 在 00:05.000 时，画面切至 &lt;Subject 3&gt; (S1) 的特写，这位在 Shot 1 中穿浅粉色衬衫的金发女子。她的恼怒渐渐软化，望向萨摩耶犬。&lt;Subject 3&gt; (S1) 用同样参考自 &lt;Audio 1&gt; 的清亮年轻音色、带着愉快的语调回应道：&lt;d&gt;[English] Well, he has good taste at least.&lt;/d&gt; 她微笑着，举起饼干做了一个类似敬酒的小动作。一段经典的罐头式观众笑声在这句话结束后立即响起，并持续到最后一帧。
+
+overall_soundscape（整体音景）:
+柔和的室内咖啡馆空间音在整个场景中持续存在。
+
+non_diegetic_music（画外配乐）:
+N/A
+                    </div>
+                </details>
+            </section>
+
+            <!-- 脚注 -->
+            <div class="footnote">
+                <strong>说明：</strong> 本文档为英文原版指南的中文翻译，示例代码块中的描述性正文已译为中文。以下内容保持英文原样未翻译：
+                字段名（如 <code>integrated_multimodal_description</code>、<code>overall_soundscape</code>）、
+                结构标签（如 <code>&lt;Picture N&gt;</code>、<code>[Shot N]</code>、<code>(S1)</code>、<code>&lt;d&gt;</code>）、
+                关系标记的固定取值（如 <code>fully_preserved</code>、<code>fully_copy</code>、<code>reference</code>），
+                以及 <code>&lt;d&gt;...&lt;/d&gt;</code> 内的实际对白/歌词文字。
+            </div>
+
+            <div style="text-align: right; margin-top: 2.4rem; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #eef2f6; padding-top: 1.2rem;">
+                🧒 儿童友好版 · 基于《视频提示词编写指南》整理
+            </div>
+        </main>
+    </div>
+
+    <!-- 滚动监听脚本（略） -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tocLinks = document.querySelectorAll('#toc-list a');
+            const sections = [];
+            const linkMap = new Map();
+            tocLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && href.startsWith('#')) {
+                    const targetId = href.substring(1);
+                    const targetEl = document.getElementById(targetId);
+                    if (targetEl) {
+                        sections.push(targetEl);
+                        linkMap.set(targetEl, link);
+                    }
+                }
+            });
+            if (sections.length === 0) return;
+            let activeLink = null;
+            function updateActiveLink() {
+                let currentSection = null;
+                for (let i = sections.length - 1; i >= 0; i--) {
+                    const rect = sections[i].getBoundingClientRect();
+                    if (rect.top <= 150) {
+                        currentSection = sections[i];
+                        break;
+                    }
+                }
+                if (!currentSection && sections.length > 0) currentSection = sections[0];
+                if (currentSection) {
+                    const activeLinkEl = linkMap.get(currentSection);
+                    if (activeLinkEl && activeLinkEl !== activeLink) {
+                        tocLinks.forEach(link => link.classList.remove('active'));
+                        activeLinkEl.classList.add('active');
+                        activeLink = activeLinkEl;
+                    }
+                }
+            }
+            setTimeout(updateActiveLink, 100);
+            let ticking = false;
+            window.addEventListener('scroll', function() {
+                if (!ticking) {
+                    window.requestAnimationFrame(function() {
+                        updateActiveLink();
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
+            tocLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    tocLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    activeLink = this;
+                });
+            });
+        });
+    </script>
+</body>
+</html>

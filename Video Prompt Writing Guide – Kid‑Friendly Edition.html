@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Prompt Writing Guide · Kid‑Friendly Edition</title>
+    <style>
+        /* --- Reset --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f4f7fc;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #1e293b;
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .app-wrapper {
+            display: flex;
+            gap: 2.5rem;
+            max-width: 1440px;
+            margin: 0 auto;
+            align-items: flex-start;
+        }
+
+        .toc-sidebar {
+            flex: 0 0 280px;
+            position: sticky;
+            top: 2rem;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+            padding: 1.8rem 1.2rem;
+            border: 1px solid #eef2f6;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+
+        .toc-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .toc-sidebar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .toc-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+            color: #94a3b8;
+            margin-bottom: 1.2rem;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 0.6rem;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.3rem;
+        }
+
+        .toc-list a {
+            display: block;
+            padding: 0.35rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #475569;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .toc-list a:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
+        .toc-list a.active {
+            background: #f1f5f9;
+            color: #0f172a;
+            border-left-color: #3b82f6;
+            font-weight: 600;
+        }
+
+        .toc-list .toc-h3 a {
+            padding-left: 1.8rem;
+            font-size: 0.8rem;
+            font-weight: 400;
+            color: #64748b;
+        }
+
+        .toc-list .toc-h3 a.active {
+            border-left-color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .toc-divider {
+            height: 1px;
+            background: #eef2f6;
+            margin: 0.8rem 0;
+        }
+
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            background: #ffffff;
+            border-radius: 28px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.03);
+            padding: 2.8rem 3.2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .app-wrapper {
+                flex-direction: column;
+            }
+            .toc-sidebar {
+                position: relative;
+                top: 0;
+                flex: auto;
+                width: 100%;
+                max-height: 300px;
+                margin-bottom: 1.5rem;
+                padding: 1.2rem;
+            }
+            .main-content {
+                padding: 1.8rem 1.5rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 0.8rem 0.5rem;
+            }
+            .main-content {
+                padding: 1.2rem 1rem;
+                border-radius: 20px;
+            }
+            .toc-sidebar {
+                padding: 0.8rem;
+            }
+            .toc-list a {
+                font-size: 0.8rem;
+                padding: 0.2rem 0.6rem;
+            }
+        }
+
+        /* --- Typography --- */
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(145deg, #0f172a, #334155);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.2rem;
+        }
+
+        .main-subhead {
+            color: #64748b;
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f1f5f9;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1rem;
+        }
+        .main-subhead span {
+            background: #f1f5f9;
+            padding: 0.1rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .section-part {
+            margin-top: 2.8rem;
+            padding-top: 1.2rem;
+            border-top: 3px solid #e9edf4;
+        }
+        .section-part:first-of-type {
+            border-top: none;
+            margin-top: 0.5rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 650;
+            letter-spacing: -0.01em;
+            margin-bottom: 1rem;
+            color: #0f172a;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 650;
+            margin-top: 2rem;
+            margin-bottom: 0.6rem;
+            color: #1e293b;
+        }
+
+        h4 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-top: 1.6rem;
+            margin-bottom: 0.3rem;
+            color: #1e293b;
+        }
+
+        p {
+            margin-bottom: 0.8rem;
+        }
+
+        ul,
+        ol {
+            padding-left: 1.6rem;
+            margin-bottom: 1.2rem;
+        }
+        li {
+            margin-bottom: 0.25rem;
+        }
+
+        .concept {
+            border-bottom: 2px dashed #3b82f6;
+            padding-bottom: 1px;
+            cursor: help;
+            position: relative;
+        }
+        .concept:hover::after {
+            content: "🧒 Click for a 5‑year‑old explanation";
+            position: absolute;
+            bottom: 1.8em;
+            left: 0;
+            background: #1e293b;
+            color: #f1f5f9;
+            padding: 0.2rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        .kid-explain {
+            background: #f0f9ff;
+            border-radius: 16px;
+            padding: 1rem 1.6rem;
+            margin: 1rem 0 1.6rem;
+            border-left: 5px solid #3b82f6;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+            color: #0c4a6e;
+        }
+        .kid-explain .icon {
+            font-size: 1.6rem;
+            line-height: 1.4;
+            flex-shrink: 0;
+        }
+        .kid-explain .text {
+            font-size: 0.95rem;
+        }
+        .kid-explain .text strong {
+            color: #075985;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            margin: 1rem 0 1.6rem;
+            border-radius: 14px;
+            border: 1px solid #e9edf4;
+            background: #fafcff;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            min-width: 480px;
+        }
+        th {
+            background: #f1f6fd;
+            font-weight: 600;
+            text-align: left;
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid #dce2ec;
+        }
+        td {
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid #eef2f6;
+            vertical-align: top;
+            text-align: left;
+        }
+
+        .code-block {
+            background: #0f172a;
+            color: #e2e8f0;
+            border-radius: 16px;
+            padding: 1.2rem 1.8rem;
+            margin: 1rem 0 1.6rem;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.85rem;
+            line-height: 1.7;
+            white-space: pre-line;
+            word-break: break-word;
+            border: 1px solid #1e293b;
+            text-align: left;
+        }
+        .code-block .field {
+            color: #7dd3fc;
+        }
+        .code-block .tag {
+            color: #fcd34d;
+        }
+        .code-block .string {
+            color: #a7f3d0;
+        }
+        .code-block .dim {
+            color: #94a3b8;
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+            background: #f1f4fa;
+            padding: 0.1rem 0.4rem;
+            border-radius: 6px;
+            color: #1e293b;
+            border: 1px solid #e2e8f0;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #eef2f6;
+            padding: 0.1rem 0.7rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-right: 0.2rem;
+        }
+        .badge-blue {
+            background: #dbeafe;
+            color: #1e4a7a;
+        }
+
+        .rel {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.05rem 0.6rem;
+            border-radius: 20px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            display: inline-block;
+        }
+        .rel-full {
+            background: #dcfce7;
+            border-color: #86efac;
+            color: #166534;
+        }
+        .rel-part {
+            background: #fef3c7;
+            border-color: #fcd34d;
+            color: #92400e;
+        }
+        .rel-trans {
+            background: #dbeafe;
+            border-color: #93c5fd;
+            color: #1e4a7a;
+        }
+        .rel-weak {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #475569;
+        }
+
+        .section-card {
+            background: #fafcff;
+            border-radius: 18px;
+            padding: 1.4rem 1.8rem;
+            margin: 1.6rem 0;
+            border: 1px solid #eef2f6;
+            text-align: left;
+        }
+
+        .def-grid {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 0.3rem 1rem;
+            background: #f8fafc;
+            padding: 1rem 1.4rem;
+            border-radius: 14px;
+            margin: 0.8rem 0 1.2rem;
+            border: 1px solid #eef2f6;
+            text-align: left;
+        }
+        .def-grid .dt {
+            font-weight: 600;
+            color: #0f172a;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0 1.4rem;
+        }
+        .task-item {
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 0.8rem 1.2rem;
+            border: 1px solid #eef2f6;
+            text-align: left;
+        }
+        .task-item strong {
+            display: block;
+            font-size: 1rem;
+            color: #0f172a;
+        }
+        .task-item span {
+            font-size: 0.85rem;
+            color: #475569;
+        }
+
+        details {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 0.8rem 1.4rem 0.2rem;
+            margin: 1.4rem 0;
+            border: 1px solid #eef2f6;
+        }
+        details summary {
+            font-weight: 600;
+            cursor: pointer;
+            color: #0f172a;
+            padding: 0.2rem 0;
+        }
+
+        .footnote {
+            font-size: 0.85rem;
+            color: #64748b;
+            background: #f8fafc;
+            padding: 0.8rem 1.2rem;
+            border-radius: 12px;
+            border-left: 3px solid #cbd5e1;
+            margin: 2rem 0 0.4rem;
+            text-align: left;
+        }
+
+        .anchor {
+            scroll-margin-top: 1.5rem;
+        }
+
+        .toc-list a.active {
+            background: #f1f5f9;
+            border-left-color: #3b82f6;
+            color: #0f172a;
+        }
+        .toc-list .toc-h3 a.active {
+            border-left-color: #94a3b8;
+        }
+
+        .retention-table td:first-child {
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .retention-table .example-cell {
+            font-size: 0.85rem;
+            color: #334155;
+        }
+        .highlight-box {
+            background: #fefce8;
+            border: 1px solid #fde68a;
+            border-radius: 12px;
+            padding: 0.8rem 1.2rem;
+            margin-top: 1rem;
+        }
+        .highlight-box strong {
+            color: #92400e;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- Sidebar TOC -->
+        <nav class="toc-sidebar" aria-label="Table of contents">
+            <div class="toc-title">📑 On this page</div>
+            <ul class="toc-list" id="toc-list">
+                <li><a href="#part1" class="active">Part 1 · Base Generation Modes</a></li>
+                <li class="toc-h3"><a href="#sec1-1">1.1 Task Overview</a></li>
+                <li class="toc-h3"><a href="#sec1-2">1.2 Final Prompt Structure</a></li>
+                <li class="toc-h3"><a href="#sec1-3">1.3 Keyframe Integration</a></li>
+                <li class="toc-h3"><a href="#sec1-4">1.4 Core Writing Rules</a></li>
+                <li class="toc-h3"><a href="#sec1-5">1.5 Complete Example</a></li>
+                <li class="toc-divider"></li>
+                <li><a href="#part2">Part 2 · Full‑Reference Mode</a></li>
+                <li class="toc-h3"><a href="#sec2-1">2.1 Overall Structure</a></li>
+                <li class="toc-h3"><a href="#sec2-2">2.2 Reference Tag Definitions</a></li>
+                <li class="toc-h3"><a href="#sec2-3">2.3 Summary &amp; Retention Analysis</a></li>
+                <li class="toc-h3"><a href="#sec2-4">2.4 Detailed Description</a></li>
+                <li class="toc-h3"><a href="#sec2-5">2.5 Complete Example</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <h1>🎬 Video Prompt Writing Guide</h1>
+            <div class="main-subhead">
+                <span>T2VA · I2VA · FL2VA · L2VA</span>
+                <span>Full‑Reference Mode</span>
+                <span>🧒 Kid‑Friendly Edition</span>
+            </div>
+
+            <!-- ========================================================= -->
+            <!-- Part 1: Base Generation Modes -->
+            <!-- ========================================================= -->
+            <section class="section-part" id="part1">
+                <h2>📌 Part 1: Base Generation Modes (T2VA / I2VA / FL2VA / L2VA)</h2>
+
+                <!-- 1.1 Task Overview -->
+                <h3 class="anchor" id="sec1-1">1.1 Task Overview</h3>
+                <div class="task-grid">
+                    <div class="task-item"><strong><span class="concept" title="T2VA">T2VA</span></strong><span>Text → Full audiovisual timeline</span></div>
+                    <div class="task-item"><strong><span class="concept" title="I2VA">I2VA</span></strong><span>First‑frame instruction + forward visual path</span></div>
+                    <div class="task-item"><strong><span class="concept" title="FL2VA">FL2VA</span></strong><span>First‑and‑last‑frame instruction + continuous path</span></div>
+                    <div class="task-item"><strong><span class="concept" title="L2VA">L2VA</span></strong><span>Last‑frame instruction + convergence to last frame</span></div>
+                </div>
+
+                <div class="kid-explain">
+                    <span class="icon">🧒</span>
+                    <div class="text">
+                        <strong>5‑year‑old explanation:</strong> These acronyms are four different ways to “make a movie.”<br>
+                        • <strong>T2VA</strong>: You tell the AI a story, and it draws the pictures and adds the sound.<br>
+                        • <strong>I2VA</strong>: You give it a “first picture,” and it keeps going from there.<br>
+                        • <strong>FL2VA</strong>: You give it the “first” and “last” pictures, and it connects the middle.<br>
+                        • <strong>L2VA</strong>: You give it only the “last” picture, and it works backward to figure out the beginning.
+                    </div>
+                </div>
+
+                <!-- 1.2 Final Prompt Structure -->
+                <h3 class="anchor" id="sec1-2">1.2 Final Prompt Structure</h3>
+                <h4>Instruction</h4>
+                <ul>
+                    <li><strong>T2VA</strong>: No image alignment; start directly with the three core fields.</li>
+                    <li><strong>I2VA</strong>:<br>
+                        <code>For the target video, at 0.00 seconds of the target video, fully reference &lt;Picture 1&gt; (from [Shot 1]).</code>
+                    </li>
+                    <li><strong>FL2VA</strong>:<br>
+                        <code>Reference image alignment to target video — Figure 1 (from Shot 1) aligns to 0.00s; Figure 2 (from Shot N) aligns to S.SS seconds.</code>
+                    </li>
+                    <li><strong>L2VA</strong>:<br>
+                        <code>Reference image alignment to target video — &lt;Picture 1&gt; (from [Shot N]) aligns to S.SS seconds.</code>
+                    </li>
+                </ul>
+
+                <h4>Three Core Fields</h4>
+                <div class="code-block">
+                    <span class="field">integrated_multimodal_description</span>: [Shot 1] ……
+                    <span class="field">overall_soundscape</span>: ……
+                    <span class="field">non_diegetic_music</span>: ……
+                </div>
+                <ul>
+                    <li><strong>integrated_multimodal_description</strong>: Visuals, action, camera, speakers, dialogue, singing, and diegetic sound along the timeline.</li>
+                    <li><strong>overall_soundscape</strong>: Ambient sound, physical action effects, non‑verbal vocalisations.</li>
+                    <li><strong>non_diegetic_music</strong>: Background music heard only by the audience.</li>
+                </ul>
+
+                <div class="kid-explain">
+                    <span class="icon">🧒</span>
+                    <div class="text">
+                        <strong>5‑year‑old explanation:</strong> These three fields split your “movie script” into three parts:<br>
+                        • <strong>First</strong>: what happens in the picture — like telling a story.<br>
+                        • <strong>Second</strong>: environmental sounds — rain, footsteps, etc.<br>
+                        • <strong>Third</strong>: background music — only the audience hears it, not the characters.
+                    </div>
+                </div>
+
+                <!-- 1.3 Keyframe Integration -->
+                <h3 class="anchor" id="sec1-3">1.3 Keyframe Integration</h3>
+                <div class="section-card">
+                    <h4>I2VA: Forward development from an image</h4>
+                    <p><code>&lt;Picture 1&gt;</code> is the actual first frame at 0.00s. The description should first establish the style, subject, composition, and scene anchor from the image, then describe subsequent actions. Character identity, clothing, colours, key objects, and spatial relationships should remain consistent.</p>
+                    <p><span class="badge badge-blue">Recommended structure</span> First‑frame anchor → action onset → continuous development → outcome or reaction</p>
+                </div>
+                <div class="section-card">
+                    <h4>FL2VA: Describe the path between first and last frames</h4>
+                    <p>Figure 1 is the start, Figure 2 is the end. Focus on subject movement, pose changes, object manipulation, composition evolution, and scene/lighting transitions. FL2VA often favours a single shot for interpolation. The final frame must be reached by the last <code>[Shot N]</code> at the video's end.</p>
+                    <p><span class="badge badge-blue">Recommended structure</span> First‑frame state → observable intermediate changes → differences gradually narrow → final‑frame state</p>
+                </div>
+                <div class="section-card">
+                    <h4>L2VA: Infer the beginning, land on the ending image</h4>
+                    <p><code>&lt;Picture 1&gt;</code> is the last frame, belonging to the final <code>[Shot N]</code>. Infer a reasonable earlier state based on user intent and the final frame, then describe how it gradually approaches the reference image.</p>
+                    <p><span class="badge badge-blue">Recommended structure</span> Reasonable prior state → clear action and transition path → gradual convergence in the last shot → land on the final frame</p>
+                </div>
+
+                <div class="kid-explain">
+                    <span class="icon">🧒</span>
+                    <div class="text">
+                        <strong>5‑year‑old explanation:</strong> “Keyframes” are the most important “photos” in a movie.<br>
+                        • <strong>I2VA</strong>: You give a “first photo,” and the AI keeps telling the story.<br>
+                        • <strong>FL2VA</strong>: You give a “first” and a “last” photo, and the AI imagines the middle.<br>
+                        • <strong>L2VA</strong>: You give only the “last” photo, and the AI guesses the beginning, then plays to the end.
+                    </div>
+                </div>
+
+                <!-- 1.4 Core Writing Rules -->
+                <h3 class="anchor" id="sec1-4">1.4 Core Writing Rules (shared)</h3>
+
+                <h4>① Multimodal description along the timeline</h4>
+                <p><code>integrated_multimodal_description</code> is the main body. Every detail corresponds to visible or audible content: visual style, initial composition, subject appearance and position, scene and key props, action and reactions, camera cuts, spoken content, and synchronous diegetic sound.</p>
+                <p>At the start of <code>[Shot 1]</code>, state the overall style and initial composition. Common styles: <span class="badge">Cinematic</span><span class="badge">live-action</span><span class="badge">2D-animated</span><span class="badge">3D CG</span><span class="badge">claymation</span><span class="badge">watercolor</span><span class="badge">vintage film</span>.</p>
+                <div class="code-block">
+                    [Shot 1] Live‑action, cinematic feel, a medium‑wide shot frames ……
+                </div>
+
+                <h4>② Shots and cuts</h4>
+                <p>No timestamp for the first shot. Subsequent shots use consecutive numbering and start with a strictly increasing cut time:</p>
+                <div class="code-block">
+                    [Shot 2] At 00:03.500, the cut goes to ……
+                </div>
+                <p>Use “cut to” for ordinary transitions; only use dissolves, fades, or wipes if explicitly requested. If only a change in distance or slight angle is needed, prefer camera movement over a cut.</p>
+
+                <h4>③ Camera movement: type + magnitude + speed</h4>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Dimension</th><th>Expressions</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td>Type</td><td>Zoom in / Zoom out</td><td>Lens focal‑length change, camera fixed</td></tr>
+                            <tr><td>Type</td><td>Track in / Track out</td><td>Camera moves forward/backward</td></tr>
+                            <tr><td>Type</td><td>Pan left / Pan right</td><td>Lens rotates horizontally, camera fixed</td></tr>
+                            <tr><td>Type</td><td>Track left / Track right</td><td>Camera moves horizontally</td></tr>
+                            <tr><td>Type</td><td>Tilt up / Tilt down</td><td>Lens rotates vertically, camera fixed</td></tr>
+                            <tr><td>Type</td><td>Crane up / Crane down</td><td>Entire camera moves vertically</td></tr>
+                            <tr><td>Type</td><td>Arc shot</td><td>Arc movement around the subject</td></tr>
+                            <tr><td>Type</td><td>Tracking shot</td><td>Follows a moving subject</td></tr>
+                            <tr><td>Type</td><td>Static / Fixed shot</td><td>Position and lens remain still</td></tr>
+                            <tr><td>Type</td><td>Slight / Strong shake</td><td>Camera shakes</td></tr>
+                            <tr><td>Type</td><td>POV (point‑of‑view)</td><td>First‑person perspective of the subject</td></tr>
+                            <tr><td>Type</td><td>Clockwise / Counter‑clockwise roll</td><td>Roll around the lens axis</td></tr>
+                            <tr><td>Magnitude</td><td>Small magnitude / Large magnitude</td><td>Small‑range / Large‑range change</td></tr>
+                            <tr><td>Speed</td><td>Slow speed / Fast speed</td><td>Slow / Fast movement</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Write camera movement as part of the natural action description:</p>
+                <div class="code-block">
+                    The lens zooms in slowly with small magnitude on the letter she is folding.
+                    The lens pans right quickly with large magnitude, revealing the open doorway.
+                    The camera remains fixed as the runner exits the frame.
+                </div>
+
+                <h4>④ Speakers, dialogue, and singing</h4>
+                <p>Use stable IDs <code>(S1)</code>, <code>(S2)</code>. For multiple speakers together, use <code>(S1,S2)</code>. When a speaker first appears, provide enough visual and audio context. Identity phrases, IDs, actions, and delivery style go outside <code>&lt;d&gt;</code>; inside <code>&lt;d&gt;</code> put only the language tag and the actual spoken content, transcribed verbatim.</p>
+                <div class="code-block">
+                    A young woman with a soft, slightly breathy voice (S1) says: &lt;d&gt;[English] I get off at the next station.&lt;/d&gt;
+                    Two children (S1,S2) call out together: &lt;d&gt;[English] Wait for us!&lt;/d&gt;
+                </div>
+                <p>Use “says off‑screen” for voice‑over, and add a note that lips remain closed after each <code>&lt;d&gt;</code> block.</p>
+                <p>For dialogue that continues across cuts, use <code>&lt;scenetrans&gt;</code>; for cut‑off speech, use <code>&lt;cutoff&gt;</code>.</p>
+
+                <h4>⑤ On‑screen text</h4>
+                <p>Place visible on‑screen text in double quotes, transcribed verbatim.</p>
+                <div class="code-block">
+                    A red neon sign reading “Open” glows above the doorway.
+                </div>
+
+                <h4>⑥ overall_soundscape</h4>
+                <p>Summarise ambient sound, physical action effects, and non‑verbal vocalisations in 1‑4 sentences. Do not repeat dialogue, singing, or diegetic music here. Use <code>N/A</code> only for complete silence.</p>
+                <div class="code-block">
+                    overall_soundscape: Steady rain taps against the café windows, with a low interior ambient hum persisting throughout. The entry doorbell rings once, followed by wet footsteps and the faint scrape of a chair.
+                </div>
+
+                <h4>⑦ non_diegetic_music</h4>
+                <p>Describe the background music the characters cannot hear in 1‑3 sentences, focusing on instrumentation, tempo, rhythm, and dynamic changes. Avoid abstract emotional terms. Use <code>N/A</code> if absent.</p>
+                <div class="code-block">
+                    non_diegetic_music: Sparse piano notes emerge at a slow tempo, accompanied by sustained low strings that gradually swell and fade.
+                </div>
+
+                <div class="kid-explain">
+                    <span class="icon">🧒</span>
+                    <div class="text">
+                        <strong>5‑year‑old explanation:</strong> These writing rules are like a “good‑word template” for your essay:<br>
+                        • Camera movement = how the camera moves — zoom, pan, etc.<br>
+                        • Speakers = who is talking — give each person a number so you don't mix them up.<br>
+                        • On‑screen text = words you see on the screen — write them exactly as they appear.<br>
+                        • Soundscape &amp; music = background sounds and background music — describe them separately.
+                    </div>
+                </div>
+
+                <!-- 1.5 Complete Example -->
+                <h3 class="anchor" id="sec1-5">1.5 Complete Example</h3>
+                <div class="section-card">
+                    <h4>T2VA</h4>
+                    <div class="code-block">
+                        integrated_multimodal_description: [Shot 1] Live‑action, cinematic feel, a medium‑wide shot frames a baker opening the roll‑up door of a small street‑side bakery just before sunrise. The lens zooms in slowly with small magnitude, and the middle‑aged baker, with a calm, slightly hoarse voice (S1), places a fresh loaf on the wooden counter and says: &lt;d&gt;[English] First batch of the morning.&lt;/d&gt; [Shot 2] At 00:05.000, the cut goes to a close‑up of the sliced bread steaming, with the baker's last words continuing from the previous shot.
+
+                        overall_soundscape: The wooden roll‑up door scrapes open on the quiet street, trays clink softly inside the bakery. The doorbell rings once, followed by brisk footsteps and the crisp sound of bread being sliced.
+
+                        non_diegetic_music: Gentle acoustic guitar plays at a moderate tempo, accompanied by sparse double‑bass notes, fading out softly at the end.
+                    </div>
+                </div>
+
+                <div class="kid-explain">
+                    <span class="icon">🧒</span>
+                    <div class="text">
+                        <strong>5‑year‑old explanation:</strong> These examples are like “model essays.” Once you understand one, you get them all. Remember the three parts:<br>
+                        • Story &amp; visuals (<code>integrated...</code>)<br>
+                        • Environmental sounds (<code>overall...</code>)<br>
+                        • Background music (<code>non...</code>)
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========================================================= -->
+            <!-- Part 2: Full‑Reference Mode -->
+            <!-- ========================================================= -->
+            <section class="section-part" id="part2">
+                <h2>🔁 Part 2: <span class="concept" title="Full‑Reference Mode">Full‑Reference Mode</span></h2>
+
+                <div class="kid-explain">
+                    <span class="icon">🧒</span>
+                    <div class="text">
+                        <strong>5‑year‑old explanation:</strong> “Full‑reference mode” means you show the AI some “reference materials” (pictures, videos, audio) and ask it to generate a new video that follows those materials. It's like building with LEGO using the instruction booklet.
+                    </div>
+                </div>
+
+                <!-- 2.1 Overall Structure -->
+                <h3 class="anchor" id="sec2-1">2.1 Overall Structure &amp; Output Fields</h3>
+                <p>The full‑reference output consists of these six parts in order:</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Part</th><th>Purpose</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>subject_definitions</code></td><td>Define referenced content and their reference tags</td></tr>
+                            <tr><td><code>summary</code></td><td>Summarise task type, target video, and key reference relationships</td></tr>
+                            <tr><td><code>retention_analysis</code></td><td>Describe how referenced content is preserved, migrated, or reused</td></tr>
+                            <tr><td><code>detailed_description</code></td><td>Describe visuals, action, camera, sound, and dialogue in playback order</td></tr>
+                            <tr><td><code>overall_soundscape</code></td><td>Summarise environmental and physical sounds</td></tr>
+                            <tr><td><code>non_diegetic_music</code></td><td>Describe background music heard only by the audience</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="kid-explain">
+                    <span class="icon">🧒</span>
+                    <div class="text">
+                        <strong>5‑year‑old explanation:</strong> These six parts are like an “essay outline”:<br>
+                        1. List what you're referencing (definitions).<br>
+                        2. Summarise what you're making (summary).<br>
+                        3. Analyse what's kept and what's changed (retention analysis).<br>
+                        4. Write the detailed story (detailed description).<br>
+                        5‑6. Finally, write the environmental sounds and background music.
+                    </div>
+                </div>
+
+                <!-- 2.2 Reference Tag Definitions -->
+                <h3 class="anchor" id="sec2-2">2.2 <span class="concept" title="Reference Tags">Reference Tag</span> Definitions</h3>
+                <div class="def-grid">
+                    <span class="dt">&lt;Subject N&gt;</span>
+                    <span class="dd">A <strong>visible entity</strong> (character, scene, costume, action, style, etc.) abstracted from reference material that can be reused or modified in the target video</span>
+                    <span class="dt">&lt;Picture N&gt;</span>
+                    <span class="dd">A <strong>reference image</strong> used as a concrete target frame or shot‑planning anchor</span>
+                    <span class="dt">&lt;Video N&gt;</span>
+                    <span class="dd">A <strong>reference video</strong> providing source footage, a continuation start point, or an entire video time structure</span>
+                    <span class="dt">&lt;Audio N&gt;</span>
+                    <span class="dd">An <strong>audio signal</strong> that is copied or referenced</span>
+                </div>
+                <p>Once assigned, a reference tag retains the same meaning across all six parts. <code>subject_definitions</code> must define every referenced piece of content that must be tracked separately.</p>
+
+                <div class="kid-explain">
+                    <span class="icon">🧒</span>
+                    <div class="text">
+                        <strong>5‑year‑old explanation:</strong> “Reference tags” are like giving nicknames to your reference materials:<br>
+                        • <strong>&lt;Subject&gt;</strong> = “character” — a person, animal, or thing.<br>
+                        • <strong>&lt;Picture&gt;</strong> = “photo” — a single image.<br>
+                        • <strong>&lt;Video&gt;</strong> = “video” — a video clip.<br>
+                        • <strong>&lt;Audio&gt;</strong> = “sound” — an audio clip.<br>
+                        When you write the prompt later, use these nicknames instead of the long descriptions.
+                    </div>
+                </div>
+
+                <h4><code>&lt;Subject N&gt;</code> Example</h4>
+                <div class="code-block">
+                    &lt;Subject 1&gt; is the young woman from &lt;Picture 1&gt;, with long dark hair, wearing a blue cardigan and a thin silver necklace.
+                </div>
+
+                <h4><code>&lt;Picture N&gt;</code> Example</h4>
+                <div class="code-block">
+                    &lt;Picture 2&gt; is the first frame of [Shot 1], showing a woman seated by a café window.
+                </div>
+
+                <h4><code>&lt;Video N&gt;</code> Example</h4>
+                <div class="code-block">
+                    &lt;Video 1&gt; is the source video used for the target video edit.
+                </div>
+
+                <h4><code>&lt;Audio N&gt;</code> Example</h4>
+                <div class="code-block">
+                    &lt;Audio 1&gt; is the vocal‑timbre reference for &lt;Subject 1&gt; (S1).
+                </div>
+
+                <!-- ========================================================= -->
+                <!-- 2.3 Summary & Retention Analysis -->
+                <!-- ========================================================= -->
+                <h3 class="anchor" id="sec2-3">2.3 Summary &amp; <span class="concept" title="Retention Analysis">Retention Analysis</span></h3>
+
+                <h4>Summary (<code>summary</code>)</h4>
+                <p>Prefix with the task type in square brackets:</p>
+                <div class="code-block">
+                    [reference generation] ……
+                    [video editing + reference generation + audio reuse] ……
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Task Type</th><th>Use Case</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>keyframe completion</code></td><td>Image as first frame, keyframe, last frame, etc.</td></tr>
+                            <tr><td><code>reference generation</code></td><td>Provide generative guidance for character, scene, style, etc., without serving as a specific frame</td></tr>
+                            <tr><td><code>video editing</code></td><td>Direct modification of an existing source video</td></tr>
+                            <tr><td><code>video continuation</code></td><td>New content extends from an existing source video</td></tr>
+                            <tr><td><code>audio reuse</code></td><td>Same audio signal fully or partially reused</td></tr>
+                            <tr><td><code>audio reference</code></td><td>Referenced music style, timbre, spoken content, etc., without copying the signal</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h4>Retention Analysis (<code>retention_analysis</code>) — Complete Tag Guide</h4>
+                <p><strong>What it does:</strong> It tells the AI, for each reference you provide (image/video/audio), <strong>what must stay exactly the same</strong> and <strong>what can be changed</strong>. Without it, the AI might arbitrarily alter your favourite character's appearance or ignore the reference style entirely.</p>
+
+                <div class="table-wrap">
+                    <table class="retention-table">
+                        <thead>
+                            <tr>
+                                <th style="width:18%">Tag</th>
+                                <th style="width:22%">Meaning</th>
+                                <th style="width:30%">🧒 5‑year‑old explanation</th>
+                                <th style="width:30%">💡 Example</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="rel rel-full">fully_preserved</span></td>
+                                <td><strong>Fully preserved</strong></td>
+                                <td>“This must be <strong>exactly the same</strong> — no changes!”</td>
+                                <td class="example-cell"><code>Subject 1</code> is defined as “woman in a blue cardigan” and tagged <code>fully_preserved</code>. The AI <strong>must</strong> keep the blue cardigan; red won't do.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="rel rel-part">partially_preserved</span></td>
+                                <td><strong>Partially preserved</strong></td>
+                                <td>“You can <strong>change</strong> this a little, but keep some of the original character.”</td>
+                                <td class="example-cell">The subject is “long hair” and tagged <code>partially_preserved</code>. The AI could style it as a “ponytail,” but the length attribute remains.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="rel rel-trans">attribute_transfer</span></td>
+                                <td><strong>Attribute transfer</strong></td>
+                                <td>“Take a <strong>feature</strong> from this thing and give it to another thing.”</td>
+                                <td class="example-cell">A reference video shows a “cat jumping.” Tagged <code>attribute_transfer</code>, the AI can make your “dog” perform that jump — the action is preserved, but the actor changes.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="rel rel-weak">weak_reference</span></td>
+                                <td><strong>Weak reference</strong></td>
+                                <td>“Just go with the <strong>vibe</strong> — details don't have to match exactly.”</td>
+                                <td class="example-cell">A reference image is a “vintage café.” The AI only needs to generate a café with a “similar retro feel”; the wall art and table arrangement can vary.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h4>🎵 Audio‑specific tags</h4>
+                <div class="table-wrap">
+                    <table class="retention-table">
+                        <thead>
+                            <tr>
+                                <th style="width:18%">Tag</th>
+                                <th style="width:22%">Meaning</th>
+                                <th style="width:30%">🧒 5‑year‑old explanation</th>
+                                <th style="width:30%">💡 Example</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="rel rel-full">fully_copy</span></td>
+                                <td><strong>Full copy</strong></td>
+                                <td>“Copy this sound <strong>exactly as it is</strong>.”</td>
+                                <td class="example-cell">Place the reference audio file as the target video's complete sound track with no modifications.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="rel rel-part">partially_copy</span></td>
+                                <td><strong>Partial copy</strong></td>
+                                <td>“Only copy <strong>part</strong> of it; add the rest myself.”</td>
+                                <td class="example-cell">Copy only the “rain” layer from the reference audio, but re‑do the “footsteps” and “background music” yourself.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="rel rel-trans">reference</span></td>
+                                <td><strong>Reference (timbre/style)</strong></td>
+                                <td>“<strong>Mimic</strong> this person's voice for new lines.”</td>
+                                <td class="example-cell">Reference a voice actor's timbre and pacing, but have the AI speak entirely new dialogue instead of copying the original.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="rel rel-weak">weak_reference</span></td>
+                                <td><strong>Weak reference</strong></td>
+                                <td>“Just go for <strong>that kind of feel</strong> — doesn't have to match exactly.”</td>
+                                <td class="example-cell">Reference an “upbeat pop track” as a style direction; the AI composes a new piece with a similar mood.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="kid-explain">
+                    <span class="icon">🧒</span>
+                    <div class="text">
+                        <strong>5‑year‑old summary:</strong> “Retention analysis” is the AI's “instruction manual” — it tells the AI which references to <strong>copy exactly</strong> and which to <strong>freely interpret</strong>.<br>
+                        • <strong>fully_preserved</strong> = must be identical.<br>
+                        • <strong>partially_preserved</strong> = can tweak a little.<br>
+                        • <strong>attribute_transfer</strong> = lend a feature to something else.<br>
+                        • <strong>weak_reference</strong> / <strong>reference</strong> = follow the general feel; details are flexible.
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <p><strong>📖 Real‑world example (from the guide's “complete example”)</strong></p>
+                    <div style="background:#f8fafc; padding:0.8rem 1rem; border-radius:8px; margin-top:0.5rem; font-family: monospace; font-size:0.9rem;">
+                        &lt;Subject 1&gt; (appears in [Shot 1], [Shot 2], [Shot 3]): <span class="rel rel-full">fully_preserved</span> — exposed brick walls, orange tufted sofa, patterned cushions, neon sign, and wooden coffee table are all retained.<br><br>
+                        &lt;Audio 1&gt;: <span class="rel rel-trans">reference</span> — its vocal timbre guides the delivery of &lt;Subject 3&gt;'s dialogue, but the original signal is not copied.
+                    </div>
+                    <p style="margin-top:0.8rem; font-size:0.95rem;">
+                        <strong>🔍 Breakdown:</strong><br>
+                        • For <strong>Subject 1 (café environment)</strong>, tagged <code>fully_preserved</code>. No matter how the shots cut (all 3 shots include it), the <strong>red‑brick walls, orange sofa, and neon sign</strong> must appear unchanged in every frame. This is the story's fixed stage.<br>
+                        • For <strong>Audio 1 (reference voice)</strong>, tagged <code>reference</code>. The AI <strong>cannot</strong> copy the original recording's exact words; it must <strong>mimic</strong> the person's timbre, pace, and tone. The AI generates new sentences (e.g., dialogue) that sound like the same person speaking.
+                    </p>
+                </div>
+
+                <div style="background:#f1f5f9; padding:1rem 1.4rem; border-radius:12px; margin:1.2rem 0;">
+                    <p><strong>🤔 Why it matters</strong></p>
+                    <p>Without <code>retention_analysis</code>, the AI might:</p>
+                    <ul>
+                        <li>Turn your “red‑brick café” into a random “blue‑walled diner.”</li>
+                        <li>Match your “deep‑voiced middle‑aged man” with a “high‑pitched cartoon voice.”</li>
+                    </ul>
+                    <p>With it, the AI <strong>strictly follows your creative intent</strong> — core elements (<code>fully_preserved</code>) never change, while non‑core elements (<code>weak_reference</code> / <code>reference</code>) are free to evolve. It's like giving the AI a precise GPS so it generates results that are both faithful to the references and creative.</p>
+                </div>
+
+                <!-- 2.4 Detailed Description -->
+                <h3 class="anchor" id="sec2-4">2.4 Detailed Description (<code>detailed_description</code>)</h3>
+                <p><strong>Basic format</strong> follows the same rules as Part 1, with these full‑reference differences:</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Aspect</th><th>T2VA</th><th>Full‑Reference Mode</th></tr></thead>
+                        <tbody>
+                            <tr><td>Main field</td><td><code>integrated_multimodal_description</code></td><td><code>detailed_description</code></td></tr>
+                            <tr><td>Style opening</td><td>Written after <code>[Shot 1]</code></td><td>Established in one or two sentences <em>before</em> <code>[Shot 1]</code></td></tr>
+                            <tr><td>Reference info</td><td>No full‑reference tags</td><td>Insert <code>&lt;Subject N&gt;</code>, <code>&lt;Picture N&gt;</code>, <code>&lt;Video N&gt;</code>, <code>&lt;Audio N&gt;</code> on first appearance and where relevant</td></tr>
+                            <tr><td>Audio relationships</td><td>Describes the target video's own sound</td><td>Reference <code>&lt;Audio N&gt;</code> in the corresponding shot or audio section, stating signal copy or reference</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><strong>Speakers &amp; audio sources:</strong> When a referenced subject actually speaks, retain both the visual reference tag and the speaker ID:</p>
+                <div class="code-block">
+                    &lt;Subject 2&gt; (S1) turns to the woman and says: &lt;d&gt;[English] Last summer, I went to my grandfather's house. He talked about you.&lt;/d&gt;
+                </div>
+                <p>If the spoken content is merely a lyric prompt reused from background music, and no character actually produces that sound, use <code>&lt;Audio N&gt;</code> as the audible source and do not invent a <code>(Sx)</code>.</p>
+
+                <div class="kid-explain">
+                    <span class="icon">🧒</span>
+                    <div class="text">
+                        <strong>5‑year‑old explanation:</strong> Full‑reference “detailed description” is similar to the normal mode, but you add <strong>reference tags</strong>.<br>
+                        Whenever a character, picture, video, or sound appears, mark it with its nickname (tag), just like adding a footnote that says “this part references that picture.”
+                    </div>
+                </div>
+
+                <!-- 2.5 Complete Example -->
+                <h3 class="anchor" id="sec2-5">2.5 Complete Example</h3>
+                <details open>
+                    <summary>Expand to view the full reference example</summary>
+                    <div class="code-block">
+                        subject_definitions:
+                        &lt;Subject 1&gt; is the café environment from &lt;Picture 1&gt;, characterised by exposed brick walls, an orange tufted sofa with patterned cushions, a neon sign, and a wooden coffee table.
+                        &lt;Subject 2&gt; is the fluffy white Samoyed from &lt;Picture 2&gt;, &lt;Picture 3&gt;, and &lt;Picture 4&gt;, with thick white fur, pointed ears, a dark nose, and a curled tail.
+                        &lt;Subject 3&gt; is the young blonde woman from &lt;Video 1&gt;, with long blonde hair, wearing a light‑pink shirt with rolled‑up sleeves.
+                        &lt;Subject 4&gt; is the young man from &lt;Video 2&gt;, with short wavy brown hair, wearing a dark‑grey hoodie with drawstrings.
+                        &lt;Audio 1&gt; is the vocal‑timbre reference for &lt;Subject 3&gt; (S1), containing a segment of English speech.
+
+                        summary:
+                        [reference generation + audio reference] The target video shows &lt;Subject 3&gt; eating a cookie in &lt;Subject 1&gt;. &lt;Subject 4&gt; enters with &lt;Subject 2&gt;, who lunges for the cookie. This three‑shot interaction uses &lt;Audio 1&gt; as a vocal‑timbre reference for &lt;Subject 3&gt; and ends with a canned audience laugh.
+
+                        retention_analysis:
+                        &lt;Subject 1&gt; (appears in [Shot 1], [Shot 2], [Shot 3]): fully_preserved — exposed brick walls, orange tufted sofa, patterned cushions, neon sign, and wooden coffee table are all retained.
+                        &lt;Subject 2&gt; (appears in [Shot 1], [Shot 2]): fully_preserved — the Samoyed's thick white fur, pointed ears, dark nose, and curled tail are all retained.
+                        &lt;Subject 3&gt; (appears in [Shot 1], [Shot 2], [Shot 3]): fully_preserved — the blonde woman's identity, long hair, and light‑pink shirt are all retained.
+                        &lt;Subject 4&gt; (appears in [Shot 1], [Shot 2]): fully_preserved — the young man's short wavy brown hair and dark‑grey hoodie are all retained.
+                        &lt;Audio 1&gt;: reference — its vocal timbre guides the delivery of &lt;Subject 3&gt;'s dialogue, but the original signal is not copied.
+
+                        detailed_description:
+                        The target video adopts a realistic multi‑camera sitcom style with warm interior lighting.
+                        [Shot 1] A medium shot establishes &lt;Subject 1&gt; — exposed brick walls, orange tufted sofa, patterned cushions, neon sign, and wooden coffee table. &lt;Subject 3&gt; (S1), a young woman with long blonde hair and a light‑pink shirt with rolled‑up sleeves, sits on the sofa holding a chocolate‑chip cookie. From the left, &lt;Subject 4&gt;, a young man with short wavy brown hair in a dark‑grey hoodie with drawstrings, enters the frame holding the leash of &lt;Subject 2&gt;, a Samoyed with thick white fur, pointed ears, a dark nose, and a curled tail. The dog lunges for the cookie, pulling the leash taut. &lt;Subject 3&gt; (S1) jerks her hand back and, using a clear young voice referenced from &lt;Audio 1&gt;, calls out with mild annoyance: &lt;d&gt;[English] Hey! Watch your dog!&lt;/d&gt; She closes her lips to protect the cookie while &lt;Subject 4&gt; pulls the dog back.
+                        [Shot 2] At 00:03.000, the cut goes to a close‑up of &lt;Subject 4&gt; (S2), the young man in the dark‑grey hoodie from Shot 1, now seated on the sofa beside &lt;Subject 3&gt;, holding &lt;Subject 2&gt; securely in his lap. &lt;Subject 4&gt; (S2) says in a casual young male voice with playful tone and relaxed pacing: &lt;d&gt;[English] He just likes cookies more than me.&lt;/d&gt; He purses his lips in an apologetic smile and strokes the dog's thick white fur.
+                        [Shot 3] At 00:05.000, the cut goes to a close‑up of &lt;Subject 3&gt; (S1), the blonde woman in the light‑pink shirt from Shot 1. Her annoyance softens as she looks at the Samoyed. &lt;Subject 3&gt; (S1) replies in the same clear young voice referenced from &lt;Audio 1&gt;, with a cheerful tone: &lt;d&gt;[English] Well, he has good taste at least.&lt;/d&gt; She smiles and makes a small toasting gesture with the cookie. A classic canned audience laugh erupts immediately after this line and continues through the final frame.
+
+                        overall_soundscape:
+                        A soft interior café ambience persists throughout the scene.
+
+                        non_diegetic_music:
+                        N/A
+                    </div>
+                </details>
+            </section>
+
+            <!-- Footer -->
+            <div class="footnote">
+                <strong>Note:</strong> This document is a translation of the original English guide. The following content remains in English as in the original:
+                field names (e.g. <code>integrated_multimodal_description</code>, <code>overall_soundscape</code>),
+                structural tags (e.g. <code>&lt;Picture N&gt;</code>, <code>[Shot N]</code>, <code>(S1)</code>, <code>&lt;d&gt;</code>),
+                fixed retention‑tag values (e.g. <code>fully_preserved</code>, <code>fully_copy</code>, <code>reference</code>),
+                and the actual dialogue/lyric text inside <code>&lt;d&gt;...&lt;/d&gt;</code>.
+            </div>
+
+            <div style="text-align: right; margin-top: 2.4rem; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #eef2f6; padding-top: 1.2rem;">
+                🧒 Kid‑Friendly Edition · Based on the <em>Video Prompt Writing Guide</em>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scroll‑spy script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tocLinks = document.querySelectorAll('#toc-list a');
+            const sections = [];
+            const linkMap = new Map();
+            tocLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && href.startsWith('#')) {
+                    const targetId = href.substring(1);
+                    const targetEl = document.getElementById(targetId);
+                    if (targetEl) {
+                        sections.push(targetEl);
+                        linkMap.set(targetEl, link);
+                    }
+                }
+            });
+            if (sections.length === 0) return;
+            let activeLink = null;
+
+            function updateActiveLink() {
+                let currentSection = null;
+                for (let i = sections.length - 1; i >= 0; i--) {
+                    const rect = sections[i].getBoundingClientRect();
+                    if (rect.top <= 150) {
+                        currentSection = sections[i];
+                        break;
+                    }
+                }
+                if (!currentSection && sections.length > 0) currentSection = sections[0];
+                if (currentSection) {
+                    const activeLinkEl = linkMap.get(currentSection);
+                    if (activeLinkEl && activeLinkEl !== activeLink) {
+                        tocLinks.forEach(link => link.classList.remove('active'));
+                        activeLinkEl.classList.add('active');
+                        activeLink = activeLinkEl;
+                    }
+                }
+            }
+            setTimeout(updateActiveLink, 100);
+            let ticking = false;
+            window.addEventListener('scroll', function() {
+                if (!ticking) {
+                    window.requestAnimationFrame(function() {
+                        updateActiveLink();
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
+            tocLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    tocLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    activeLink = this;
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,2535 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Minimax H3 Prompt Writer-编写器</title>
+    <style>
+        /* ===== 全局重置 & 字体 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #f0f4fb;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
+            color: #0b1a2e;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ===== 整体布局 ===== */
+        .app {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            gap: 0;
+            background: #f0f4fb;
+        }
+
+        /* ===== 左侧：历史记录 ===== */
+        .sidebar-left {
+            width: 220px;
+            min-width: 220px;
+            background: #ffffff;
+            border-right: 1px solid #e2e9f2;
+            display: flex;
+            flex-direction: column;
+            padding: 16px 12px;
+            overflow-y: auto;
+            flex-shrink: 0;
+            height: 100vh;
+        }
+        .sidebar-left h3 {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #8899b0;
+            margin-bottom: 12px;
+            font-weight: 700;
+            border-bottom: 1px solid #edf2f8;
+            padding-bottom: 8px;
+        }
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .history-item {
+            padding: 8px 10px;
+            border-radius: 10px;
+            background: #f7faff;
+            border: 1px solid #e9eef5;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.15s;
+            color: #1f3349;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+        .history-item:hover {
+            background: #eaf0fa;
+            border-color: #b6cae0;
+        }
+        .history-item .date {
+            font-size: 0.6rem;
+            color: #8899b0;
+            display: block;
+            margin-top: 2px;
+        }
+        .history-item.active {
+            background: #dbeafe;
+            border-color: #6b9fff;
+        }
+        .history-empty {
+            color: #aab9ce;
+            font-size: 0.8rem;
+            text-align: center;
+            padding: 30px 0;
+        }
+        .btn-new-session {
+            margin-top: 10px;
+            padding: 8px 0;
+            border: none;
+            background: #eef3fa;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: #1f3349;
+            cursor: pointer;
+            transition: 0.15s;
+            border: 1px solid transparent;
+        }
+        .btn-new-session:hover {
+            background: #dbe6f2;
+            border-color: #b6cae0;
+        }
+        .btn-del-history {
+            background: none;
+            border: none;
+            color: #b0c0d4;
+            font-size: 0.65rem;
+            cursor: pointer;
+            float: right;
+            padding: 0 4px;
+        }
+        .btn-del-history:hover {
+            color: #d05a5a;
+        }
+
+        /* ===== 中间：主编辑区 ===== */
+        .main-center {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 12px 16px 12px 16px;
+            min-width: 0;
+            height: 100vh;
+            overflow: hidden;
+            background: #f7faff;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+            flex-shrink: 0;
+        }
+        .toolbar .brand {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #0b1a2e;
+            letter-spacing: -0.01em;
+            margin-right: 8px;
+        }
+        .toolbar .brand small {
+            display: none;
+        }
+        .toolbar .badge-mode {
+            display: none;
+        }
+        .toolbar .spacer {
+            flex: 1;
+        }
+        .btn-tool {
+            padding: 4px 12px;
+            border-radius: 8px;
+            border: 1px solid #d5e0ec;
+            background: white;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #1f3349;
+            cursor: pointer;
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-tool:hover {
+            background: #eaf0fa;
+            border-color: #b0c6dd;
+        }
+        .btn-tool.primary {
+            background: #1f5b9e;
+            border-color: #1f5b9e;
+            color: white;
+        }
+        .btn-tool.primary:hover {
+            background: #174682;
+        }
+        .btn-tool.green {
+            background: #1f8b4a;
+            border-color: #1f8b4a;
+            color: white;
+        }
+        .btn-tool.green:hover {
+            background: #16703a;
+        }
+        .btn-tool.outline {
+            background: transparent;
+            border-color: #b6cae0;
+        }
+        .btn-tool.danger {
+            background: #d05a5a;
+            border-color: #d05a5a;
+            color: white;
+        }
+        .btn-tool.danger:hover {
+            background: #b14444;
+        }
+        .btn-lang {
+            padding: 4px 10px;
+            border-radius: 30px;
+            border: 1px solid #b8d4f0;
+            background: #dbeafe;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #1e5b9e;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .btn-lang:hover {
+            background: #b8d4f0;
+        }
+
+        /* 编辑器区域 — 新顺序：完整预览→当前预览→编辑器→扩写 */
+        .editor-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            gap: 4px;
+        }
+
+        /* 完整预览段落列表：占主要部分 */
+        .preview-full-wrap {
+            flex: 6;
+            min-height: 100px;
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e2eaf5;
+            padding: 6px 10px;
+            overflow-y: auto;
+            font-size: 0.75rem;
+            line-height: 1.6;
+            color: #0b1a2e;
+        }
+        .preview-full-wrap .empty-hint {
+            color: #aab9ce;
+            font-style: italic;
+        }
+        .preview-full-wrap .seg-block {
+            background: #fafcff;
+            border-radius: 8px;
+            padding: 4px 8px;
+            margin-bottom: 4px;
+            border-left: 3px solid #b6cae0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 6px;
+        }
+        .preview-full-wrap .seg-block .seg-content {
+            flex: 1;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .preview-full-wrap .seg-block .seg-actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+            margin-top: 0px;
+        }
+        .preview-full-wrap .seg-block .seg-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.65rem;
+            padding: 0 4px;
+            color: #6b8baa;
+            transition: 0.1s;
+        }
+        .preview-full-wrap .seg-block .seg-actions button:hover {
+            color: #1f5b9e;
+        }
+        .preview-full-wrap .seg-block .seg-actions .del-btn:hover {
+            color: #d05a5a;
+        }
+        .preview-full-wrap .seg-block .seg-index {
+            font-weight: 600;
+            color: #8899b0;
+            font-size: 0.6rem;
+            margin-right: 4px;
+        }
+
+        /* 当前段落预览（小条） */
+        .preview-current {
+            flex-shrink: 0;
+            max-height: 36px;
+            background: #f0f5fd;
+            border-radius: 8px;
+            padding: 2px 12px;
+            border: 1px solid #e2eaf5;
+            overflow-y: auto;
+            font-size: 0.7rem;
+            line-height: 1.5;
+            color: #1f3349;
+            white-space: pre-wrap;
+            word-break: break-word;
+            min-height: 28px;
+        }
+        .preview-current .empty-hint {
+            color: #aab9ce;
+            font-style: italic;
+        }
+
+        /* 编辑器输入框 */
+        .editor-textarea-wrap {
+            flex: 2;
+            min-height: 50px;
+            display: flex;
+            flex-direction: column;
+        }
+        .editor-textarea {
+            flex: 1;
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 12px;
+            border: 1px solid #d8e3ef;
+            background: white;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+            transition: 0.15s;
+            color: #0b1a2e;
+        }
+        .editor-textarea:focus {
+            border-color: #6b9fff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+        .editor-textarea::placeholder {
+            color: #b0c4da;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+        }
+
+        /* 聊天扩写区域：正常高度 */
+        .chat-area {
+            flex: 1.2;
+            min-height: 44px;
+            display: flex;
+            gap: 8px;
+            padding-top: 4px;
+            border-top: 1px solid #e2eaf5;
+            align-items: center;
+        }
+        .chat-area input {
+            flex: 1;
+            padding: 6px 14px;
+            border-radius: 30px;
+            border: 1px solid #d8e3ef;
+            background: white;
+            font-size: 0.8rem;
+            outline: none;
+            transition: 0.15s;
+            font-family: 'Inter', sans-serif;
+            height: 36px;
+        }
+        .chat-area input:focus {
+            border-color: #6b9fff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+        }
+        .chat-area input::placeholder {
+            color: #b0c4da;
+        }
+        .chat-area .btn-send {
+            padding: 6px 18px;
+            border-radius: 30px;
+            border: none;
+            background: #1f5b9e;
+            color: white;
+            font-weight: 600;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: 0.15s;
+            white-space: nowrap;
+            height: 36px;
+            display: flex;
+            align-items: center;
+        }
+        .chat-area .btn-send:hover {
+            background: #174682;
+        }
+        .chat-area .btn-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .chat-area .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #b0c4da;
+            flex-shrink: 0;
+        }
+        .chat-area .status-dot.loading {
+            background: #f5b342;
+            animation: pulse 0.8s infinite;
+        }
+        .chat-area .status-dot.ok {
+            background: #7db87d;
+        }
+        .chat-area .status-dot.error {
+            background: #d05a5a;
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        /* ===== 右侧：API + 标签 ===== */
+        .sidebar-right {
+            width: 290px;
+            min-width: 290px;
+            background: #ffffff;
+            border-left: 1px solid #e2e9f2;
+            display: flex;
+            flex-direction: column;
+            padding: 12px 12px 16px;
+            overflow-y: auto;
+            height: 100vh;
+            flex-shrink: 0;
+            gap: 8px;
+        }
+        /* API设置区域（顶部） */
+        .api-section {
+            flex-shrink: 0;
+            background: #f7faff;
+            border-radius: 14px;
+            border: 1px solid #e2eaf5;
+            padding: 10px 12px;
+            margin-bottom: 4px;
+        }
+        .api-section summary {
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: #1f3349;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .api-section summary .arrow {
+            transition: 0.2s;
+            font-size: 0.6rem;
+        }
+        .api-section[open] summary .arrow {
+            transform: rotate(90deg);
+        }
+        .api-section .api-row {
+            display: flex;
+            gap: 4px;
+            margin-top: 4px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .api-section .api-row label {
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: #4a6a8a;
+            width: 100%;
+            margin-top: 2px;
+        }
+        .api-section .api-row input,
+        .api-section .api-row textarea {
+            flex: 1;
+            min-width: 60px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid #d8e3ef;
+            font-size: 0.65rem;
+            background: white;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+        }
+        .api-section .api-row textarea {
+            min-height: 40px;
+            resize: vertical;
+            font-size: 0.6rem;
+        }
+        .api-section .api-row input:focus,
+        .api-section .api-row textarea:focus {
+            border-color: #6b9fff;
+        }
+        .api-section .api-row .btn-sm {
+            padding: 3px 10px;
+            border-radius: 6px;
+            border: 1px solid #b6cae0;
+            background: white;
+            font-size: 0.6rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.1s;
+            white-space: nowrap;
+        }
+        .api-section .api-row .btn-sm:hover {
+            background: #eaf0fa;
+        }
+        .api-section .api-row .btn-sm.primary {
+            background: #1f5b9e;
+            border-color: #1f5b9e;
+            color: white;
+        }
+        .api-section .api-row .btn-sm.primary:hover {
+            background: #174682;
+        }
+        .api-section .api-row .btn-sm.danger {
+            background: #d05a5a;
+            border-color: #d05a5a;
+            color: white;
+        }
+        .api-section .api-row .btn-sm.danger:hover {
+            background: #b14444;
+        }
+        .api-section .config-select {
+            flex: 1;
+            min-width: 100px;
+        }
+
+        /* 模型输入：自定义下拉 */
+        .model-input-wrap {
+            position: relative;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .model-input-wrap input {
+            width: 100%;
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid #d8e3ef;
+            font-size: 0.65rem;
+            background: white;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+        }
+        .model-input-wrap input:focus {
+            border-color: #6b9fff;
+        }
+        .model-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            max-height: 180px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #d8e3ef;
+            border-radius: 6px;
+            z-index: 1000;
+            margin-top: 2px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .model-dropdown .model-item {
+            padding: 4px 10px;
+            cursor: pointer;
+            font-size: 0.65rem;
+            font-family: 'Inter', sans-serif;
+            color: #1f3349;
+            transition: 0.1s;
+        }
+        .model-dropdown .model-item:hover {
+            background: #eaf0fa;
+        }
+        .model-dropdown .model-item.selected {
+            background: #dbeafe;
+        }
+
+        /* 标签面板 */
+        .tag-panel {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding-top: 4px;
+            border-top: 1px solid #e2eaf5;
+        }
+        .tag-panel h3 {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #8899b0;
+            font-weight: 700;
+            margin-bottom: 4px;
+            flex-shrink: 0;
+        }
+        .tag-category {
+            margin-bottom: 6px;
+            flex-shrink: 0;
+        }
+        .tag-category .cat-title {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #4a6a8a;
+            letter-spacing: 0.04em;
+            margin-bottom: 3px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: default;
+            user-select: none;
+        }
+        .tag-category .cat-title .arrow {
+            transition: 0.2s;
+            font-size: 0.5rem;
+            cursor: pointer;
+        }
+        .tag-category .cat-title .arrow.collapsed {
+            transform: rotate(-90deg);
+        }
+        .tag-category .cat-title .add-tag-btn {
+            font-size: 0.7rem;
+            cursor: pointer;
+            background: #e9eef5;
+            border-radius: 30px;
+            padding: 0 6px;
+            line-height: 1.4;
+            color: #3d5f7f;
+            font-weight: 500;
+            border: 1px solid #d8e3ef;
+            transition: 0.1s;
+        }
+        .tag-category .cat-title .add-tag-btn:hover {
+            background: #dbeafe;
+            border-color: #6b9fff;
+        }
+        .tag-category .tag-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            padding-left: 2px;
+            transition: max-height 0.25s ease;
+            overflow: hidden;
+            max-height: 800px;
+        }
+        .tag-category .tag-grid.collapsed {
+            max-height: 0;
+        }
+        .tag-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 10px 2px 8px;
+            border-radius: 30px;
+            font-size: 0.6rem;
+            font-weight: 500;
+            background: #f0f5fd;
+            border: 1px solid #d8e3ef;
+            color: #1f3349;
+            cursor: pointer;
+            transition: 0.12s;
+            white-space: nowrap;
+            position: relative;
+            gap: 3px;
+        }
+        .tag-chip:hover {
+            transform: scale(1.02);
+            z-index: 5;
+            filter: brightness(0.96);
+        }
+        .tag-chip .del-custom-tag {
+            font-size: 0.5rem;
+            color: #b0c0d4;
+            cursor: pointer;
+            padding: 0 2px;
+            border-radius: 10px;
+            transition: 0.1s;
+            margin-left: 2px;
+        }
+        .tag-chip .del-custom-tag:hover {
+            color: #d05a5a;
+            background: #fee2e2;
+        }
+        .tag-chip.custom-tag {
+            background: #fef9e7;
+            border-color: #f5b342;
+        }
+        .tag-chip.custom-tag::after {
+            content: "★";
+            font-size: 0.5rem;
+            color: #f5b342;
+            margin-left: 2px;
+        }
+
+        /* 标签颜色分类 */
+        .tag-chip.type-ref {
+            background: #dbeafe;
+            border-color: #6b9fff;
+            color: #1e5b9e;
+        }
+        .tag-chip.type-cam {
+            background: #fef3c7;
+            border-color: #f5b342;
+            color: #9e6f1a;
+        }
+        .tag-chip.type-audio {
+            background: #fee2e2;
+            border-color: #f87171;
+            color: #991b1b;
+        }
+        .tag-chip.type-struct {
+            background: #e9d5ff;
+            border-color: #a78bfa;
+            color: #5b21b6;
+        }
+        .tag-chip.type-retention {
+            background: #ccfbf1;
+            border-color: #2dd4bf;
+            color: #0f766e;
+        }
+        .tag-chip.type-fullref {
+            background: #fce7f3;
+            border-color: #f472b6;
+            color: #9d174d;
+        }
+        .tag-chip.type-dialogue {
+            background: #d1fae5;
+            border-color: #34d399;
+            color: #065f46;
+        }
+
+        /* 全局 tooltip (fixed) */
+        #global-tooltip {
+            display: none;
+            position: fixed;
+            background: #0b1a2e;
+            color: #f0f5fd;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.6rem;
+            z-index: 99999;
+            pointer-events: none;
+            max-width: 220px;
+            white-space: normal;
+            line-height: 1.4;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+            font-family: 'Inter', sans-serif;
+            border: 1px solid #2a3f5a;
+        }
+        #global-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #0b1a2e;
+        }
+
+        /* ===== 滚动条 ===== */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c8d6e8;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8bcd4;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 1024px) {
+            .sidebar-left {
+                width: 170px;
+                min-width: 170px;
+                padding: 12px 8px;
+            }
+            .sidebar-right {
+                width: 230px;
+                min-width: 230px;
+                padding: 10px 8px;
+            }
+        }
+        @media (max-width: 768px) {
+            .app {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+                overflow-y: auto;
+            }
+            .sidebar-left,
+            .sidebar-right {
+                width: 100%;
+                min-width: unset;
+                height: auto;
+                max-height: 200px;
+                border: none;
+                border-bottom: 1px solid #e2e9f2;
+            }
+            .sidebar-right {
+                border-left: none;
+                border-top: 1px solid #e2e9f2;
+                max-height: 300px;
+            }
+            .main-center {
+                height: auto;
+                min-height: 500px;
+                padding: 12px;
+            }
+            .editor-textarea {
+                min-height: 80px;
+            }
+            .preview-full-wrap {
+                min-height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app" id="app">
+        <!-- ===== 左侧：历史记录 ===== -->
+        <aside class="sidebar-left">
+            <h3 data-i18n="historyTitle">📋 制作记录</h3>
+            <div class="history-list" id="historyList">
+                <div class="history-empty" data-i18n="historyEmpty">还没有记录<br />完成一段提示词后自动保存</div>
+            </div>
+            <button class="btn-new-session" id="btnNewSession" data-i18n="newSessionBtn">➕ 新建会话</button>
+        </aside>
+
+        <!-- ===== 中间：主编辑区 ===== -->
+        <main class="main-center">
+            <!-- 工具栏 -->
+            <div class="toolbar">
+                <span class="brand">🎬 <span data-i18n="brandName">提示词工坊</span></span>
+                <span class="spacer"></span>
+                <button class="btn-lang" id="btnLangToggle">🌐 EN</button>
+                <button class="btn-tool" id="btnInsertExpand" title="在光标位置插入扩写标签 {{EXPAND}}" data-i18n-title="insertExpandTitle" data-i18n="insertExpandBtn">📝 扩写标签</button>
+                <button class="btn-tool" id="btnClearSegment" title="清空当前段落" data-i18n-title="clearSegmentTitle" data-i18n="clearSegmentBtn">🗑️ 清空段</button>
+                <button class="btn-tool green" id="btnConfirmSegment" data-i18n="confirmSegmentBtn">✅ 确认段落</button>
+                <button class="btn-tool primary" id="btnSaveSession" data-i18n="saveSessionBtn">💾 保存全部</button>
+                <button class="btn-tool outline" id="btnExportData" data-i18n="exportDataBtn">📤 导出数据</button>
+                <button class="btn-tool outline" id="btnImportData" data-i18n="importDataBtn">📥 导入数据</button>
+            </div>
+
+            <!-- 编辑器区域 -->
+            <div class="editor-area">
+                <!-- 完整预览段落列表 -->
+                <div class="preview-full-wrap" id="previewFull">
+                    <span class="empty-hint" data-i18n="previewFullEmpty">所有已确认的段落将显示在这里，可编辑或删除</span>
+                </div>
+
+                <!-- 当前段落预览 -->
+                <div class="preview-current" id="previewCurrent">
+                    <span class="empty-hint" data-i18n="previewCurrentEmpty">⚡ 当前段落预览将显示在这里</span>
+                </div>
+
+                <!-- 编辑器输入框 -->
+                <div class="editor-textarea-wrap">
+                    <div class="editor-label">
+                        <span><span data-i18n="editorLabel">📄 当前段落</span> <span class="seg-num" id="segNum">#1</span>
+                            <span id="editModeHint" style="font-weight:400;color:#d05a5a;font-size:0.65rem;display:none;" data-i18n="editModeHint">(编辑中)</span>
+                        </span>
+                        <span style="font-weight:400;color:#8899b0;font-size:0.6rem;" data-i18n="editorSubLabel">点击标签插入 · 支持 {{EXPAND}}</span>
+                    </div>
+                    <textarea class="editor-textarea" id="editorText" placeholder="输入或点击右侧标签插入内容… 例如：[Shot 1] 实拍风格，电影感，一个中远景镜头…"></textarea>
+                </div>
+
+                <!-- 聊天扩写 -->
+                <div class="chat-area">
+                    <span class="status-dot" id="statusDot" title="API状态"></span>
+                    <input type="text" id="chatInput" placeholder="输入扩写指令，例如：描述一个下雨的街景，AI将自动扩写 {{EXPAND}} 位置…" />
+                    <button class="btn-send" id="btnSendChat" data-i18n="sendChatBtn">✉️ 扩写</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- ===== 右侧：API设置 + 标签 ===== -->
+        <aside class="sidebar-right">
+            <!-- API设置 -->
+            <details class="api-section" open id="apiSection">
+                <summary>
+                    <span data-i18n="apiSectionTitle">🔌 API 设置</span>
+                    <span class="arrow">▸</span>
+                    <span style="font-weight:400;font-size:0.6rem;color:#8899b0;margin-left:auto;" id="apiStatusLabel" data-i18n="apiStatusLabel">未配置</span>
+                </summary>
+                <div class="api-row">
+                    <label data-i18n="apiEndpointLabel">API 端点</label>
+                    <input type="text" id="apiUrl" placeholder="https://api.openai.com/v1/chat/completions" />
+                </div>
+                <div class="api-row">
+                    <label data-i18n="apiKeyLabel">API Key</label>
+                    <input type="password" id="apiKey" placeholder="sk-..." />
+                </div>
+                <div class="api-row">
+                    <label data-i18n="apiModelLabel">模型</label>
+                    <div class="model-input-wrap">
+                        <input type="text" id="apiModelInput" placeholder="输入或选择模型" autocomplete="off" />
+                        <div class="model-dropdown" id="modelDropdown"></div>
+                    </div>
+                </div>
+                <div class="api-row">
+                    <label data-i18n="systemPromptLabel">系统提示词 (System Prompt)</label>
+                    <textarea id="systemPrompt" rows="2" placeholder="系统提示词…"></textarea>
+                </div>
+                <div class="api-row">
+                    <label data-i18n="userPromptLabel">用户提示词模板 (可用 {{content}} {{instruction}})</label>
+                    <textarea id="userPromptTemplate" rows="2" placeholder="用户提示词模板…"></textarea>
+                </div>
+                <div class="api-row" style="flex-wrap:wrap;gap:4px;">
+                    <label style="width:100%;" data-i18n="configManageLabel">配置管理</label>
+                    <input type="text" id="configName" placeholder="配置名称" style="flex:1;min-width:80px;" />
+                    <button class="btn-sm primary" id="btnSaveConfig" data-i18n="saveConfigBtn">💾 保存</button>
+                    <select class="config-select" id="configSelector"><option value="">-- 切换 --</option></select>
+                    <button class="btn-sm danger" id="btnDeleteConfig" data-i18n="deleteConfigBtn">🗑️ 删除</button>
+                    <button class="btn-sm" id="btnTestApi" data-i18n="testApiBtn">🔍 测试 + 获取模型</button>
+                </div>
+            </details>
+
+            <!-- 标签面板 -->
+            <div class="tag-panel">
+                <h3 data-i18n="tagPanelTitle">🏷️ 标签库 <span style="font-weight:400;font-size:0.55rem;color:#8899b0;" data-i18n="tagPanelSub">悬停看解释 · 点击插入</span></h3>
+                <div id="tagPanel"></div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- 全局 Tooltip -->
+    <div id="global-tooltip"></div>
+
+    <script>
+        // ================================================================
+        // 0. 国际化 (i18n) 翻译字典 - 完整版
+        // ================================================================
+        const i18n = {
+            'zh-CN': {
+                // 侧边栏
+                'historyTitle': '📋 制作记录',
+                'historyEmpty': '还没有记录<br />完成一段提示词后自动保存',
+                'newSessionBtn': '➕ 新建会话',
+                // 工具栏
+                'brandName': '提示词工坊',
+                'version': 'v2.1',
+                'insertExpandBtn': '📝 扩写标签',
+                'insertExpandTitle': '在光标位置插入扩写标签 {{EXPAND}}',
+                'clearSegmentBtn': '🗑️ 清空段',
+                'clearSegmentTitle': '清空当前段落',
+                'confirmSegmentBtn': '✅ 确认段落',
+                'saveSessionBtn': '💾 保存全部',
+                'exportDataBtn': '📤 导出数据',
+                'importDataBtn': '📥 导入数据',
+                // 编辑器
+                'previewFullEmpty': '所有已确认的段落将显示在这里，可编辑或删除',
+                'previewCurrentEmpty': '⚡ 当前段落预览将显示在这里',
+                'editorLabel': '📄 当前段落',
+                'editModeHint': '(编辑中)',
+                'editorSubLabel': '点击标签插入 · 支持 {{EXPAND}}',
+                'sendChatBtn': '✉️ 扩写',
+                // API设置
+                'apiSectionTitle': '🔌 API 设置',
+                'apiStatusLabel': '未配置',
+                'apiEndpointLabel': 'API 端点',
+                'apiKeyLabel': 'API Key',
+                'apiModelLabel': '模型',
+                'systemPromptLabel': '系统提示词 (System Prompt)',
+                'userPromptLabel': '用户提示词模板 (可用 {{content}} {{instruction}})',
+                'configManageLabel': '配置管理',
+                'saveConfigBtn': '💾 保存',
+                'deleteConfigBtn': '🗑️ 删除',
+                'testApiBtn': '🔍 测试 + 获取模型',
+                // 标签面板
+                'tagPanelTitle': '🏷️ 标签库',
+                'tagPanelSub': '悬停看解释 · 点击插入',
+                // 标签分类
+                'cat_struct': '🧩 结构标签',
+                'cat_ref': '🏷️ 引用标签',
+                'cat_fullref': '📦 全参考字段',
+                'cat_retention': '🔒 保留度标记',
+                'cat_cam': '🎥 镜头运动',
+                'cat_audio': '🎵 声音字段',
+                // 标签描述
+                'tag_desc_[Shot N]': '镜头编号，用于区分不同镜头。第一个镜头不加时间戳。',
+                'tag_desc_(S1)': '说话人ID，稳定标识不同角色。',
+                'tag_desc_(S2)': '说话人ID，稳定标识不同角色。',
+                'tag_desc_<d>...</d>': '对白/歌唱内容，内部包含语言标签和实际口语。',
+                'tag_desc_<scenetrans>': '跨切换的对白，表示对话跨越镜头切换。',
+                'tag_desc_<cutoff>': '被截断的语音，表示话语被中断。',
+                'tag_desc_<Subject N>': '从参考素材中抽象出的可见内容（人物、场景、服装、动作、风格等），可复用或修改。',
+                'tag_desc_<Picture N>': '作为具体目标帧或分镜规划锚点的参考图像。',
+                'tag_desc_<Video N>': '提供剪辑源、延续起点或整段视频时间结构的参考视频。',
+                'tag_desc_<Audio N>': '被复制或引用的音频信号。',
+                'tag_desc_subject_definitions': '定义被引用的内容及其引用标签。',
+                'tag_desc_summary': '概括任务类型、目标视频及主要引用关系。',
+                'tag_desc_retention_analysis': '描述被引用内容如何被保留、迁移或复用。',
+                'tag_desc_detailed_description': '按播放顺序描述画面、动作、镜头、声音和对白。',
+                'tag_desc_fully_preserved': '完全保留 —— 必须完全照抄，一点都不能变！',
+                'tag_desc_partially_preserved': '部分保留 —— 可以改一改，但得保留一些原来的特点。',
+                'tag_desc_attribute_transfer': '属性迁移 —— 把这个东西的特点，拿给另一个东西用。',
+                'tag_desc_weak_reference': '弱引用 —— 大概照着这个感觉来就行，细节不用一模一样。',
+                'tag_desc_reference': '引用（音色/风格）—— 模仿这个人的声音特点来说新的话。',
+                'tag_desc_fully_copy': '完整复制 —— 这个声音原样复制贴上去。',
+                'tag_desc_partially_copy': '部分复制 —— 只复制一部分，其他自己加。',
+                'tag_desc_Zoom In': '机身不动、焦距变化，主体逐渐放大。',
+                'tag_desc_Zoom Out': '机身不动、焦距变化，主体逐渐缩小。',
+                'tag_desc_Dolly In': '摄像机前后移动，向主体靠近。',
+                'tag_desc_Dolly Out': '摄像机前后移动，远离主体。',
+                'tag_desc_Pan Left / Right': '机身不动、镜头水平转动。',
+                'tag_desc_Truck Left / Right': '摄像机水平平移。',
+                'tag_desc_Tilt Up / Down': '机身不动、镜头垂直转动。',
+                'tag_desc_Crane Up': '整个摄像机向上移动。',
+                'tag_desc_Crane Down': '整个摄像机向下移动。',
+                'tag_desc_Arc Shot': '围绕主体做弧线运动。',
+                'tag_desc_Follow Shot': '跟随移动主体。',
+                'tag_desc_Fixed Shot': '位置和镜头保持静止。',
+                'tag_desc_Light Shake': '镜头轻微晃动，增加真实感。',
+                'tag_desc_Heavy Shake': '镜头剧烈晃动，营造紧张感。',
+                'tag_desc_POV': '主体第一人称视角。',
+                'tag_desc_integrated_multimodal_description': '沿时间线描述画面、动作、镜头、说话人、对白、歌唱及画面内音效。',
+                'tag_desc_overall_soundscape': '环境音、物理动作音效、非语言人声。',
+                'tag_desc_non_diegetic_music': '只有观众能听到的背景音乐，角色听不到。',
+                // Placeholders
+                'configSelectorPlaceholder': '-- 切换 --',
+                'apiUrlPlaceholder': 'https://api.openai.com/v1/chat/completions',
+                'apiKeyPlaceholder': 'sk-...',
+                'apiModelPlaceholder': '输入或选择模型',
+                'systemPromptPlaceholder': '系统提示词…',
+                'userPromptPlaceholder': '用户提示词模板…',
+                'configNamePlaceholder': '配置名称',
+                'editorPlaceholder': '输入或点击右侧标签插入内容… 例如：[Shot 1] 实拍风格，电影感，一个中远景镜头…',
+                'chatPlaceholder': '输入扩写指令，例如：描述一个下雨的街景，AI将自动扩写 {{EXPAND}} 位置…',
+                'chatPlaceholderAfterExpand': '✏️ 已插入扩写标签，输入指令后回车扩写…',
+                'chatPlaceholderDone': '✅ 扩写完成！继续输入指令…',
+                // 状态
+                'statusConnected': '已连接 ✅',
+                'statusReady': '就绪',
+                'statusError': '错误',
+                'statusLoading': '加载中…',
+                'statusNotConfigured': '未配置',
+                'statusConfigured': '已配置',
+                'statusTesting': '测试中…',
+                'statusGenerating': '生成中…',
+                'statusResponseError': '响应异常',
+                'statusConnectionFailed': '连接失败',
+                'apiConnected': '已配置',
+                'apiNotConfigured': '未配置',
+                // 按钮标题
+                'editBtnTitle': '编辑此段',
+                'deleteBtnTitle': '删除此段',
+                'addCustomTagTitle': '添加自定义标签',
+                // 提示框
+                'promptSessionTitle': '给这个提示词起个标题（可选）：',
+                'alertEmptySegment': '当前段落为空，请先编写内容。',
+                'alertExpandFailed': '扩写失败：',
+                'alertEnterInstruction': '请输入扩写指令',
+                'alertSelectModel': '请选择或输入模型',
+                'alertConfigureApi': '请先配置 API 端点和 Key。',
+                'alertFillApi': '请填写 API 端点和 Key',
+                'alertTestFailed': '测试失败：',
+                'alertEnterConfigName': '请输入配置名称',
+                'alertSelectConfigToDelete': '请先选择要删除的配置',
+                'alertInvalidData': '无效的数据文件，缺少 state 字段',
+                'alertImportSuccess': '数据导入成功！',
+                'alertImportFailed': '导入失败：',
+                'alertSaved': '✅ 已保存到历史记录！',
+                'alertNoSegments': '还没有任何段落，无法保存。',
+                'alertConfigSaved': '配置已保存',
+                'alertConfigDeleted': '已删除',
+                'alertTagExists': '标签已存在，不能重复添加。',
+                'alertCustomTagExists': '自定义标签已存在。',
+                // 确认框
+                'confirmDelete': '确定删除段落 #',
+                'confirmClearSegment': '清空当前段落内容？',
+                'confirmExpandMarker': '当前段落包含未扩写的 {{EXPAND}} 标记，确认后标记将原样保留。继续吗？',
+                'confirmNoExpandMarker': '当前段落没有 {{EXPAND}} 标记，将把扩写内容追加到段落末尾。继续吗？',
+                'confirmOverwriteConfig': '配置已存在，是否覆盖？',
+                'confirmDeleteConfig': '确定删除配置',
+                'confirmDeleteHistory': '确定删除这条记录吗？',
+                'confirmLoadHistory': '加载将替换当前编辑内容，确定吗？',
+                'confirmNewSession': '当前有未保存的内容，新建会话将丢失。确定吗？',
+                'confirmDeleteCustomTag': '删除自定义标签',
+                'addCustomLabelPrompt': '请输入自定义标签文本',
+                'addCustomDescPrompt': '请输入标签描述（可选）：',
+            },
+            'en': {
+                // Sidebar
+                'historyTitle': '📋 History',
+                'historyEmpty': 'No records yet<br />Auto-save after completing a prompt',
+                'newSessionBtn': '➕ New Session',
+                // Toolbar
+                'brandName': 'Prompt Workshop',
+                'version': 'v2.1',
+                'insertExpandBtn': '📝 Expand Tag',
+                'insertExpandTitle': 'Insert {{EXPAND}} tag at cursor position',
+                'clearSegmentBtn': '🗑️ Clear Segment',
+                'clearSegmentTitle': 'Clear current segment',
+                'confirmSegmentBtn': '✅ Confirm Segment',
+                'saveSessionBtn': '💾 Save All',
+                'exportDataBtn': '📤 Export Data',
+                'importDataBtn': '📥 Import Data',
+                // Editor
+                'previewFullEmpty': 'All confirmed segments will appear here, editable and deletable',
+                'previewCurrentEmpty': '⚡ Current segment preview will appear here',
+                'editorLabel': '📄 Current Segment',
+                'editModeHint': '(editing)',
+                'editorSubLabel': 'Click tags to insert · Supports {{EXPAND}}',
+                'sendChatBtn': '✉️ Expand',
+                // API Settings
+                'apiSectionTitle': '🔌 API Settings',
+                'apiStatusLabel': 'Not Configured',
+                'apiEndpointLabel': 'API Endpoint',
+                'apiKeyLabel': 'API Key',
+                'apiModelLabel': 'Model',
+                'systemPromptLabel': 'System Prompt',
+                'userPromptLabel': 'User Prompt Template (use {{content}} {{instruction}})',
+                'configManageLabel': 'Configuration Management',
+                'saveConfigBtn': '💾 Save',
+                'deleteConfigBtn': '🗑️ Delete',
+                'testApiBtn': '🔍 Test + Fetch Models',
+                // Tag Panel
+                'tagPanelTitle': '🏷️ Tag Library',
+                'tagPanelSub': 'Hover for explanation · Click to insert',
+                // Tag Categories
+                'cat_struct': '🧩 Structure Tags',
+                'cat_ref': '🏷️ Reference Tags',
+                'cat_fullref': '📦 Full Reference Fields',
+                'cat_retention': '🔒 Retention Markers',
+                'cat_cam': '🎥 Camera Movement',
+                'cat_audio': '🎵 Audio Fields',
+                // Tag descriptions
+                'tag_desc_[Shot N]': 'Shot number, distinguishes different shots. First shot has no timestamp.',
+                'tag_desc_(S1)': 'Speaker ID, stable identification for characters.',
+                'tag_desc_(S2)': 'Speaker ID, stable identification for characters.',
+                'tag_desc_<d>...</d>': 'Dialogue/singing content, contains language tags and actual speech.',
+                'tag_desc_<scenetrans>': 'Cross-cut dialogue, indicates conversation spanning across shot transitions.',
+                'tag_desc_<cutoff>': 'Cut-off speech, indicates interrupted utterance.',
+                'tag_desc_<Subject N>': 'Visible content abstracted from reference material (characters, scenes, costumes, actions, styles, etc.), reusable or modifiable.',
+                'tag_desc_<Picture N>': 'Reference image used as specific target frame or storyboard anchor.',
+                'tag_desc_<Video N>': 'Reference video providing clip source, continuation start, or overall video temporal structure.',
+                'tag_desc_<Audio N>': 'Audio signal being copied or referenced.',
+                'tag_desc_subject_definitions': 'Defines referenced content and its reference tags.',
+                'tag_desc_summary': 'Summarizes task type, target video, and main reference relationships.',
+                'tag_desc_retention_analysis': 'Describes how referenced content is retained, transferred, or reused.',
+                'tag_desc_detailed_description': 'Describes visuals, actions, shots, sound, and dialogue in playback order.',
+                'tag_desc_fully_preserved': 'Fully preserved — must be copied exactly, no changes allowed!',
+                'tag_desc_partially_preserved': 'Partially preserved — can be modified but retain some original characteristics.',
+                'tag_desc_attribute_transfer': 'Attribute transfer — take characteristics of one thing and apply to another.',
+                'tag_desc_weak_reference': 'Weak reference — follow the general feel, details don\'t need to be exact.',
+                'tag_desc_reference': 'Reference (timbre/style) — mimic the voice characteristics to deliver new lines.',
+                'tag_desc_fully_copy': 'Full copy — this audio is copied and pasted verbatim.',
+                'tag_desc_partially_copy': 'Partial copy — only copy part, add your own for the rest.',
+                'tag_desc_Zoom In': 'Camera body fixed, focal length changes, subject gradually enlarges.',
+                'tag_desc_Zoom Out': 'Camera body fixed, focal length changes, subject gradually shrinks.',
+                'tag_desc_Dolly In': 'Camera moves forward, approaching the subject.',
+                'tag_desc_Dolly Out': 'Camera moves backward, moving away from the subject.',
+                'tag_desc_Pan Left / Right': 'Camera body fixed, lens pans horizontally.',
+                'tag_desc_Truck Left / Right': 'Camera moves horizontally.',
+                'tag_desc_Tilt Up / Down': 'Camera body fixed, lens tilts vertically.',
+                'tag_desc_Crane Up': 'Camera moves upward.',
+                'tag_desc_Crane Down': 'Camera moves downward.',
+                'tag_desc_Arc Shot': 'Arc movement around the subject.',
+                'tag_desc_Follow Shot': 'Follows a moving subject.',
+                'tag_desc_Fixed Shot': 'Position and lens remain stationary.',
+                'tag_desc_Light Shake': 'Lens slightly shakes, adding realism.',
+                'tag_desc_Heavy Shake': 'Lens shakes violently, creating tension.',
+                'tag_desc_POV': 'First-person perspective of the subject.',
+                'tag_desc_integrated_multimodal_description': 'Describes visuals, actions, shots, speakers, dialogue, singing, and on-screen sound effects along the timeline.',
+                'tag_desc_overall_soundscape': 'Ambient sound, physical action sound effects, non-verbal vocals.',
+                'tag_desc_non_diegetic_music': 'Background music audible only to the audience, not the characters.',
+                // Placeholders
+                'configSelectorPlaceholder': '-- Switch --',
+                'apiUrlPlaceholder': 'https://api.openai.com/v1/chat/completions',
+                'apiKeyPlaceholder': 'sk-...',
+                'apiModelPlaceholder': 'Enter or select model',
+                'systemPromptPlaceholder': 'System prompt…',
+                'userPromptPlaceholder': 'User prompt template…',
+                'configNamePlaceholder': 'Config name',
+                'editorPlaceholder': 'Enter or click tags to insert content… e.g.: [Shot 1] Live-action style, cinematic, a medium-wide shot…',
+                'chatPlaceholder': 'Enter expansion instruction, e.g.: describe a rainy street scene, AI will expand at {{EXPAND}} position…',
+                'chatPlaceholderAfterExpand': '✏️ Expand tag inserted, enter instruction and press Enter to expand…',
+                'chatPlaceholderDone': '✅ Expansion complete! Continue entering instructions…',
+                // Status
+                'statusConnected': 'Connected ✅',
+                'statusReady': 'Ready',
+                'statusError': 'Error',
+                'statusLoading': 'Loading…',
+                'statusNotConfigured': 'Not Configured',
+                'statusConfigured': 'Configured',
+                'statusTesting': 'Testing…',
+                'statusGenerating': 'Generating…',
+                'statusResponseError': 'Response Error',
+                'statusConnectionFailed': 'Connection Failed',
+                'apiConnected': 'Configured',
+                'apiNotConfigured': 'Not Configured',
+                // Button titles
+                'editBtnTitle': 'Edit this segment',
+                'deleteBtnTitle': 'Delete this segment',
+                'addCustomTagTitle': 'Add custom tag',
+                // Alerts
+                'promptSessionTitle': 'Give this prompt a title (optional):',
+                'alertEmptySegment': 'Current segment is empty, please write content first.',
+                'alertExpandFailed': 'Expansion failed:',
+                'alertEnterInstruction': 'Please enter expansion instruction',
+                'alertSelectModel': 'Please select or enter a model',
+                'alertConfigureApi': 'Please configure API endpoint and Key first.',
+                'alertFillApi': 'Please fill in API endpoint and Key',
+                'alertTestFailed': 'Test failed:',
+                'alertEnterConfigName': 'Please enter config name',
+                'alertSelectConfigToDelete': 'Please select a config to delete first',
+                'alertInvalidData': 'Invalid data file, missing state field',
+                'alertImportSuccess': 'Data imported successfully!',
+                'alertImportFailed': 'Import failed:',
+                'alertSaved': '✅ Saved to history!',
+                'alertNoSegments': 'No segments yet, cannot save.',
+                'alertConfigSaved': 'Config saved',
+                'alertConfigDeleted': 'Deleted',
+                'alertTagExists': 'Tag already exists, cannot add duplicate.',
+                'alertCustomTagExists': 'Custom tag already exists.',
+                // Confirm
+                'confirmDelete': 'Are you sure you want to delete segment #',
+                'confirmClearSegment': 'Clear current segment content?',
+                'confirmExpandMarker': 'Current segment contains unexpanded {{EXPAND}} marker, it will remain as is. Continue?',
+                'confirmNoExpandMarker': 'Current segment has no {{EXPAND}} marker, expansion will be appended to the end. Continue?',
+                'confirmOverwriteConfig': 'Configuration already exists, overwrite?',
+                'confirmDeleteConfig': 'Are you sure you want to delete config',
+                'confirmDeleteHistory': 'Are you sure you want to delete this record?',
+                'confirmLoadHistory': 'Loading will replace current content, are you sure?',
+                'confirmNewSession': 'Current content is unsaved, new session will lose it. Are you sure?',
+                'confirmDeleteCustomTag': 'Delete custom tag',
+                'addCustomLabelPrompt': 'Please enter custom tag text',
+                'addCustomDescPrompt': 'Please enter tag description (optional):',
+            }
+        };
+
+        // ================================================================
+        // 1. 数据定义 —— 标签
+        // ================================================================
+        const TAG_DATA = [{
+            category: '🧩 结构标签',
+            type: 'struct',
+            tags: [
+                { label: '[Shot N]', desc: '镜头编号，用于区分不同镜头。第一个镜头不加时间戳。' },
+                { label: '(S1)', desc: '说话人ID，稳定标识不同角色。' },
+                { label: '(S2)', desc: '说话人ID，稳定标识不同角色。' },
+                { label: '<d>...</d>', desc: '对白/歌唱内容，内部包含语言标签和实际口语。' },
+                { label: '<scenetrans>', desc: '跨切换的对白，表示对话跨越镜头切换。' },
+                { label: '<cutoff>', desc: '被截断的语音，表示话语被中断。' },
+            ]
+        }, {
+            category: '🏷️ 引用标签',
+            type: 'ref',
+            tags: [
+                { label: '<Subject N>', desc: '从参考素材中抽象出的可见内容（人物、场景、服装、动作、风格等），可复用或修改。' },
+                { label: '<Picture N>', desc: '作为具体目标帧或分镜规划锚点的参考图像。' },
+                { label: '<Video N>', desc: '提供剪辑源、延续起点或整段视频时间结构的参考视频。' },
+                { label: '<Audio N>', desc: '被复制或引用的音频信号。' },
+            ]
+        }, {
+            category: '📦 全参考字段',
+            type: 'fullref',
+            tags: [
+                { label: 'subject_definitions', desc: '定义被引用的内容及其引用标签。' },
+                { label: 'summary', desc: '概括任务类型、目标视频及主要引用关系。' },
+                { label: 'retention_analysis', desc: '描述被引用内容如何被保留、迁移或复用。' },
+                { label: 'detailed_description', desc: '按播放顺序描述画面、动作、镜头、声音和对白。' },
+            ]
+        }, {
+            category: '🔒 保留度标记',
+            type: 'retention',
+            tags: [
+                { label: 'fully_preserved', desc: '完全保留 —— 必须完全照抄，一点都不能变！' },
+                { label: 'partially_preserved', desc: '部分保留 —— 可以改一改，但得保留一些原来的特点。' },
+                { label: 'attribute_transfer', desc: '属性迁移 —— 把这个东西的特点，拿给另一个东西用。' },
+                { label: 'weak_reference', desc: '弱引用 —— 大概照着这个感觉来就行，细节不用一模一样。' },
+                { label: 'reference', desc: '引用（音色/风格）—— 模仿这个人的声音特点来说新的话。' },
+                { label: 'fully_copy', desc: '完整复制 —— 这个声音原样复制贴上去。' },
+                { label: 'partially_copy', desc: '部分复制 —— 只复制一部分，其他自己加。' },
+            ]
+        }, {
+            category: '🎥 镜头运动',
+            type: 'cam',
+            tags: [
+                { label: 'Zoom In', desc: '机身不动、焦距变化，主体逐渐放大。' },
+                { label: 'Zoom Out', desc: '机身不动、焦距变化，主体逐渐缩小。' },
+                { label: 'Dolly In', desc: '摄像机前后移动，向主体靠近。' },
+                { label: 'Dolly Out', desc: '摄像机前后移动，远离主体。' },
+                { label: 'Pan Left / Right', desc: '机身不动、镜头水平转动。' },
+                { label: 'Truck Left / Right', desc: '摄像机水平平移。' },
+                { label: 'Tilt Up / Down', desc: '机身不动、镜头垂直转动。' },
+                { label: 'Crane Up', desc: '整个摄像机向上移动。' },
+                { label: 'Crane Down', desc: '整个摄像机向下移动。' },
+                { label: 'Arc Shot', desc: '围绕主体做弧线运动。' },
+                { label: 'Follow Shot', desc: '跟随移动主体。' },
+                { label: 'Fixed Shot', desc: '位置和镜头保持静止。' },
+                { label: 'Light Shake', desc: '镜头轻微晃动，增加真实感。' },
+                { label: 'Heavy Shake', desc: '镜头剧烈晃动，营造紧张感。' },
+                { label: 'POV', desc: '主体第一人称视角。' },
+            ]
+        }, {
+            category: '🎵 声音字段',
+            type: 'audio',
+            tags: [
+                { label: 'integrated_multimodal_description',
+                    desc: '沿时间线描述画面、动作、镜头、说话人、对白、歌唱及画面内音效。' },
+                { label: 'overall_soundscape', desc: '环境音、物理动作音效、非语言人声。' },
+                { label: 'non_diegetic_music', desc: '只有观众能听到的背景音乐，角色听不到。' },
+            ]
+        }];
+
+        // 标签颜色映射
+        const TAG_COLORS = {
+            ref: '#1e5b9e',
+            cam: '#b45f06',
+            audio: '#b13e3e',
+            struct: '#6f42c1',
+            retention: '#008b8b',
+            fullref: '#b33c8a',
+            dialogue: '#2d8f5c',
+            custom: '#d97706',
+        };
+
+        const LABEL_TYPE_MAP = {};
+        TAG_DATA.forEach(cat => {
+            cat.tags.forEach(tag => {
+                LABEL_TYPE_MAP[tag.label] = cat.type;
+            });
+        });
+        LABEL_TYPE_MAP['<d>'] = 'dialogue';
+        LABEL_TYPE_MAP['</d>'] = 'dialogue';
+
+        const ALL_BUILTIN_LABELS = [];
+        TAG_DATA.forEach(cat => {
+            cat.tags.forEach(tag => {
+                ALL_BUILTIN_LABELS.push(tag.label);
+            });
+        });
+
+        // ================================================================
+        // 2. 应用状态
+        // ================================================================
+        const state = {
+            sessionId: Date.now(),
+            segments: [],
+            currentSegment: '',
+            segmentIndex: 1,
+            fullPrompt: '',
+            editingIndex: null,
+            history: [],
+            apiUrl: 'https://api.openai.com/v1/chat/completions',
+            apiKey: '',
+            apiModel: 'gpt-3.5-turbo',
+            systemPrompt: 'You are a prompt word expansion assistant. You only expand on the preceding content and only output the expanded content. This is the key.',
+            userPromptTemplate: 'Current prompt draft: {{content}}\n\n Expansion instructions: {{instruction}}',
+            expandMarker: '{{EXPAND}}',
+            modelList: [],
+            configs: [],
+            currentConfigName: null,
+            customTags: {},
+            lang: 'zh-CN',
+        };
+
+        // ================================================================
+        // 3. DOM 引用
+        // ================================================================
+        const $ = id => document.getElementById(id);
+        const editor = $('editorText');
+        const previewCurrent = $('previewCurrent');
+        const previewFull = $('previewFull');
+        const segNum = $('segNum');
+        const editModeHint = $('editModeHint');
+        const chatInput = $('chatInput');
+        const statusDot = $('statusDot');
+        const statusLabel = $('apiStatusLabel');
+        const historyList = $('historyList');
+        const tagPanel = $('tagPanel');
+
+        const apiUrlInput = $('apiUrl');
+        const apiKeyInput = $('apiKey');
+        const apiModelInput = $('apiModelInput');
+        const modelDropdown = $('modelDropdown');
+        const systemPromptInput = $('systemPrompt');
+        const userPromptTemplateInput = $('userPromptTemplate');
+        const configNameInput = $('configName');
+        const configSelector = $('configSelector');
+
+        const globalTooltip = $('global-tooltip');
+        const btnLangToggle = $('btnLangToggle');
+
+        // ================================================================
+        // 4. 国际化 (i18n) 核心
+        // ================================================================
+        function getI18n(key) {
+            const lang = state.lang || 'zh-CN';
+            return i18n[lang]?.[key] || key;
+        }
+
+        function setI18nAttributes() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                const translation = getI18n(key);
+                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                    el.placeholder = translation;
+                } else {
+                    el.innerHTML = translation;
+                }
+            });
+            document.querySelectorAll('[data-i18n-title]').forEach(el => {
+                const key = el.dataset.i18nTitle;
+                el.title = getI18n(key);
+            });
+            renderTags();
+            updatePlaceholders();
+            updateStatusLabel();
+            updateButtonTexts();
+        }
+
+        function updatePlaceholders() {
+            editor.placeholder = getI18n('editorPlaceholder') || '输入或点击右侧标签插入内容…';
+            chatInput.placeholder = getI18n('chatPlaceholder') || '输入扩写指令…';
+            apiUrlInput.placeholder = getI18n('apiUrlPlaceholder') || 'https://api.openai.com/v1/chat/completions';
+            apiKeyInput.placeholder = getI18n('apiKeyPlaceholder') || 'sk-...';
+            apiModelInput.placeholder = getI18n('apiModelPlaceholder') || '输入或选择模型';
+            systemPromptInput.placeholder = getI18n('systemPromptPlaceholder') || '系统提示词…';
+            userPromptTemplateInput.placeholder = getI18n('userPromptPlaceholder') || '用户提示词模板…';
+            configNameInput.placeholder = getI18n('configNamePlaceholder') || '配置名称';
+            configSelector.options[0].text = getI18n('configSelectorPlaceholder') || '-- 切换 --';
+        }
+
+        function updateStatusLabel() {
+            const key = state.apiKey ? 'apiConnected' : 'apiNotConfigured';
+            statusLabel.textContent = getI18n(key) || (state.apiKey ? '已配置' : '未配置');
+        }
+
+        function updateButtonTexts() {
+            btnLangToggle.textContent = state.lang === 'zh-CN' ? '🌐 EN' : '🌐 中文';
+        }
+
+        function toggleLanguage() {
+            state.lang = state.lang === 'zh-CN' ? 'en' : 'zh-CN';
+            setI18nAttributes();
+            renderTags();
+            updatePreviews();
+            updateHistoryList();
+            try {
+                localStorage.setItem('prompt_workshop_lang', state.lang);
+            } catch (e) { /* ignore */ }
+            updateButtonTexts();
+        }
+
+        function loadLanguagePreference() {
+            try {
+                const saved = localStorage.getItem('prompt_workshop_lang');
+                if (saved === 'en' || saved === 'zh-CN') {
+                    state.lang = saved;
+                }
+            } catch (e) { /* ignore */ }
+            btnLangToggle.textContent = state.lang === 'zh-CN' ? '🌐 EN' : '🌐 中文';
+            setI18nAttributes();
+        }
+
+        // ================================================================
+        // 5. 核心功能
+        // ================================================================
+
+        function highlightTags(text) {
+            if (!text) return '';
+            let escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const builtinList = ALL_BUILTIN_LABELS.slice().sort((a, b) => b.length - a.length);
+            builtinList.forEach(label => {
+                let escapedLabel = label.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                escapedLabel = escapedLabel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(escapedLabel, 'g');
+                let type = LABEL_TYPE_MAP[label];
+                if (!type) {
+                    if (label.includes('Subject') || label.includes('Picture') || label.includes('Video') || label.includes(
+                            'Audio')) type = 'ref';
+                    else if (label.includes('Shot') || label.includes('S1') || label.includes('S2') || label.includes(
+                            'scenetrans') || label.includes('cutoff')) type = 'struct';
+                    else if (label.includes('d>') || label.includes('/d>')) type = 'dialogue';
+                    else type = 'custom';
+                }
+                const color = TAG_COLORS[type] || '#000';
+                escaped = escaped.replace(regex, (match) => {
+                    if (match.includes('style="color:')) return match;
+                    return `<span style="color:${color};font-weight:600;">${match}</span>`;
+                });
+            });
+            const customLabels = [];
+            for (const cat of Object.values(state.customTags)) {
+                for (const tag of cat) {
+                    customLabels.push(tag.label);
+                }
+            }
+            const uniqueCustom = [...new Set(customLabels)];
+            uniqueCustom.forEach(label => {
+                let escapedLabel = label.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                escapedLabel = escapedLabel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(escapedLabel, 'g');
+                escaped = escaped.replace(regex, (match) => {
+                    if (match.includes('style="color:')) return match;
+                    const color = TAG_COLORS.custom || '#d97706';
+                    return `<span style="color:${color};font-weight:600;">${match}</span>`;
+                });
+            });
+            return escaped;
+        }
+
+        function updatePreviews() {
+            const seg = editor.value;
+            const currentEmptyText = getI18n('previewCurrentEmpty') || '⚡ 当前段落预览将显示在这里';
+            previewCurrent.innerHTML = seg ?
+                `<span style="white-space:pre-wrap;">${highlightTags(seg)}</span>` :
+                `<span class="empty-hint">${currentEmptyText}</span>`;
+            renderSegments();
+            segNum.textContent = `#${state.segmentIndex}`;
+            if (state.editingIndex !== null) {
+                editModeHint.style.display = 'inline';
+                const editText = getI18n('editModeHint') || '(编辑中)';
+                editModeHint.textContent = `(${editText} #${state.editingIndex+1})`;
+            } else {
+                editModeHint.style.display = 'none';
+            }
+            saveToLocal();
+        }
+
+        function renderSegments() {
+            const container = previewFull;
+            if (state.segments.length === 0) {
+                const emptyText = getI18n('previewFullEmpty') || '所有已确认的段落将显示在这里，可编辑或删除';
+                container.innerHTML = `<span class="empty-hint">${emptyText}</span>`;
+                return;
+            }
+            let html = '';
+            state.segments.forEach((seg, idx) => {
+                const contentHtml = highlightTags(seg.content);
+                html += `<div class="seg-block" data-index="${idx}">
+                            <div class="seg-content">
+                                <span class="seg-index">#${idx+1}</span>
+                                <span style="white-space:pre-wrap;">${contentHtml}</span>
+                            </div>
+                            <div class="seg-actions">
+                                <button class="edit-btn" data-index="${idx}" title="${getI18n('editBtnTitle') || '编辑此段'}">✏️</button>
+                                <button class="del-btn" data-index="${idx}" title="${getI18n('deleteBtnTitle') || '删除此段'}">🗑️</button>
+                            </div>
+                        </div>`;
+            });
+            container.innerHTML = html;
+            container.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    const idx = parseInt(this.dataset.index);
+                    editSegment(idx);
+                });
+            });
+            container.querySelectorAll('.del-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    const idx = parseInt(this.dataset.index);
+                    deleteSegment(idx);
+                });
+            });
+        }
+
+        function editSegment(idx) {
+            if (idx < 0 || idx >= state.segments.length) return;
+            const content = state.segments[idx].content;
+            editor.value = content;
+            state.editingIndex = idx;
+            state.segmentIndex = idx + 1;
+            updatePreviews();
+            editor.focus();
+        }
+
+        function deleteSegment(idx) {
+            const confirmText = getI18n('confirmDelete') || `确定删除段落 #${idx+1} 吗？`;
+            if (!confirm(confirmText)) return;
+            state.segments.splice(idx, 1);
+            state.fullPrompt = state.segments.map(s => s.content).join('\n\n');
+            if (state.editingIndex === idx) {
+                state.editingIndex = null;
+                editor.value = '';
+            } else if (state.editingIndex !== null && state.editingIndex > idx) {
+                state.editingIndex--;
+            }
+            state.segmentIndex = state.segments.length + 1;
+            updatePreviews();
+            saveToLocal();
+        }
+
+        function confirmSegment() {
+            const content = editor.value.trim();
+            if (!content) {
+                alert(getI18n('alertEmptySegment') || '当前段落为空，请先编写内容。');
+                return;
+            }
+            if (content.includes(state.expandMarker)) {
+                const confirmText = getI18n('confirmExpandMarker') || '当前段落包含未扩写的 {{EXPAND}} 标记，确认后标记将原样保留。继续吗？';
+                if (!confirm(confirmText)) {
+                    return;
+                }
+            }
+            if (state.editingIndex !== null) {
+                const idx = state.editingIndex;
+                state.segments[idx].content = content;
+                state.fullPrompt = state.segments.map(s => s.content).join('\n\n');
+                state.editingIndex = null;
+                editor.value = '';
+                state.segmentIndex = state.segments.length + 1;
+                updatePreviews();
+                saveToLocal();
+                return;
+            }
+            state.segments.push({ content, index: state.segmentIndex });
+            state.fullPrompt = state.segments.map(s => s.content).join('\n\n');
+            editor.value = '';
+            state.segmentIndex++;
+            updatePreviews();
+            updateHistoryList();
+            saveToLocal();
+            previewFull.scrollTop = previewFull.scrollHeight;
+        }
+
+        function clearSegment() {
+            if (editor.value.trim()) {
+                const confirmText = getI18n('confirmClearSegment') || '清空当前段落内容？';
+                if (!confirm(confirmText)) return;
+            }
+            editor.value = '';
+            if (state.editingIndex !== null) {
+                state.editingIndex = null;
+                state.segmentIndex = state.segments.length + 1;
+            }
+            updatePreviews();
+        }
+
+        function insertTag(label) {
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const text = editor.value;
+            const before = text.substring(0, start);
+            const after = text.substring(end);
+            let insertText = label;
+            if (label.startsWith('<') || label.startsWith('[') || label.startsWith('(')) {
+                if (before && !before.endsWith(' ')) insertText = ' ' + insertText;
+                if (after && !after.startsWith(' ')) insertText = insertText + ' ';
+            } else {
+                if (before && !before.endsWith(' ')) insertText = ' ' + insertText;
+                if (after && !after.startsWith(' ')) insertText = insertText + ' ';
+            }
+            editor.value = before + insertText + after;
+            const newPos = start + insertText.length;
+            editor.selectionStart = editor.selectionEnd = newPos;
+            editor.focus();
+            updatePreviews();
+        }
+
+        function insertExpandMarker() {
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const text = editor.value;
+            const before = text.substring(0, start);
+            const after = text.substring(end);
+            const marker = state.expandMarker;
+            let insertText = marker;
+            if (before && !before.endsWith(' ')) insertText = ' ' + insertText;
+            if (after && !after.startsWith(' ')) insertText = insertText + ' ';
+            editor.value = before + insertText + after;
+            const newPos = start + insertText.length;
+            editor.selectionStart = editor.selectionEnd = newPos;
+            editor.focus();
+            updatePreviews();
+            chatInput.placeholder = getI18n('chatPlaceholderAfterExpand') || '✏️ 已插入扩写标签，输入指令后回车扩写…';
+            chatInput.focus();
+        }
+
+        async function handleExpand() {
+            const instruction = chatInput.value.trim();
+            if (!instruction) {
+                alert(getI18n('alertEnterInstruction') || '请输入扩写指令');
+                return;
+            }
+            const content = editor.value;
+            if (!content.includes(state.expandMarker)) {
+                const confirmText = getI18n('confirmNoExpandMarker') || '当前段落没有 {{EXPAND}} 标记，将把扩写内容追加到段落末尾。继续吗？';
+                if (!confirm(confirmText)) {
+                    return;
+                }
+            }
+            let model = apiModelInput.value.trim();
+            if (!model) {
+                alert(getI18n('alertSelectModel') || '请选择或输入模型');
+                return;
+            }
+            state.apiModel = model;
+            const url = state.apiUrl;
+            const key = state.apiKey;
+            if (!url || !key) {
+                alert(getI18n('alertConfigureApi') || '请先配置 API 端点和 Key。');
+                return;
+            }
+            let system = state.systemPrompt || '你是一个提示词扩写助手，你只根据前面的内容扩写，并且只输出扩写的内容，这是关键。';
+            let userTemplate = state.userPromptTemplate || '当前提示词草稿：\n{{content}}\n\n扩写指令：{{instruction}}';
+            let userContent = userTemplate.replace(/\{\{content\}\}/g, content).replace(/\{\{instruction\}\}/g, instruction);
+
+            setApiStatus('loading', getI18n('statusGenerating') || '生成中…');
+            try {
+                const response = await callAI(system, userContent, url, key, model, 0.5);
+                const generated = response.trim();
+                let newContent = content;
+                if (newContent.includes(state.expandMarker)) {
+                    newContent = newContent.replace(state.expandMarker, generated);
+                } else {
+                    newContent = newContent + '\n' + generated;
+                }
+                editor.value = newContent;
+                updatePreviews();
+                chatInput.value = '';
+                chatInput.placeholder = getI18n('chatPlaceholderDone') || '✅ 扩写完成！继续输入指令…';
+                setApiStatus('ok', getI18n('statusReady') || '就绪');
+            } catch (err) {
+                alert(getI18n('alertExpandFailed') || '扩写失败：' + err.message);
+                setApiStatus('error', getI18n('statusError') || '错误');
+                console.error(err);
+            }
+        }
+
+        async function callAI(systemPrompt, userContent, url, key, model, temperature = 0.5) {
+            let response;
+            try {
+                response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${key}`,
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: [
+                            { role: 'system', content: systemPrompt },
+                            { role: 'user', content: userContent },
+                        ],
+                        temperature: temperature,
+                        max_tokens: 800,
+                    }),
+                });
+            } catch (fetchErr) {
+                throw new Error(`网络请求失败: ${fetchErr.message}。请检查API端点是否可访问。`);
+            }
+
+            let text;
+            try {
+                text = await response.text();
+            } catch (readErr) {
+                throw new Error(`读取响应失败: ${readErr.message}`);
+            }
+
+            if (!response.ok) {
+                if (text.startsWith('<!DOCTYPE') || text.startsWith('<html')) {
+                    throw new Error(`API端点返回了HTML页面（状态 ${response.status}），请检查API URL是否正确。`);
+                }
+                throw new Error(`API 错误 (${response.status}): ${text}`);
+            }
+
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (jsonErr) {
+                if (text.startsWith('<!DOCTYPE') || text.startsWith('<html')) {
+                    throw new Error('API返回了HTML而非JSON，请检查API端点是否正确。');
+                }
+                throw new Error(`解析JSON失败: ${jsonErr.message}。响应内容: ${text.substring(0, 100)}`);
+            }
+
+            if (data.choices && data.choices.length > 0) {
+                return data.choices[0].message.content;
+            }
+            throw new Error('API 返回格式异常，缺少 choices 字段');
+        }
+
+        async function fetchModels(url, key) {
+            const modelsUrl = url.replace(/\/chat\/completions$/, '/models');
+            let response;
+            try {
+                response = await fetch(modelsUrl, {
+                    headers: {
+                        'Authorization': `Bearer ${key}`,
+                    },
+                });
+            } catch (e) {
+                throw new Error(`获取模型列表网络失败: ${e.message}`);
+            }
+            if (!response.ok) {
+                throw new Error(`获取模型列表失败 (${response.status})`);
+            }
+            let data;
+            try {
+                data = await response.json();
+            } catch (e) {
+                throw new Error(`解析模型列表失败: ${e.message}`);
+            }
+            if (data.data && Array.isArray(data.data)) {
+                return data.data.map(m => m.id);
+            } else {
+                throw new Error('模型列表数据格式异常');
+            }
+        }
+
+        function updateModelDropdown(models) {
+            const sorted = models.slice().sort((a, b) => a.localeCompare(b));
+            state.modelList = sorted;
+            modelDropdown.innerHTML = '';
+            sorted.forEach(m => {
+                const div = document.createElement('div');
+                div.className = 'model-item';
+                div.textContent = m;
+                div.dataset.value = m;
+                div.addEventListener('click', function() {
+                    apiModelInput.value = m;
+                    modelDropdown.style.display = 'none';
+                    state.apiModel = m;
+                    saveApiConfig();
+                });
+                modelDropdown.appendChild(div);
+            });
+            if (sorted.length === 0) {
+                modelDropdown.style.display = 'none';
+            }
+        }
+
+        function filterModelDropdown(filterText) {
+            const items = modelDropdown.querySelectorAll('.model-item');
+            let hasVisible = false;
+            items.forEach(item => {
+                const txt = item.dataset.value;
+                if (filterText === '' || txt.toLowerCase().includes(filterText.toLowerCase())) {
+                    item.style.display = 'block';
+                    hasVisible = true;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            if (hasVisible) {
+                modelDropdown.style.display = 'block';
+            } else {
+                modelDropdown.style.display = 'none';
+            }
+        }
+
+        async function testApi() {
+            const url = apiUrlInput.value.trim();
+            const key = apiKeyInput.value.trim();
+            if (!url || !key) {
+                alert(getI18n('alertFillApi') || '请填写 API 端点和 Key');
+                return;
+            }
+            state.apiUrl = url;
+            state.apiKey = key;
+            setApiStatus('loading', getI18n('statusTesting') || '测试中…');
+            try {
+                let models = [];
+                try {
+                    models = await fetchModels(url, key);
+                } catch (modelErr) {
+                    console.warn('获取模型列表失败，继续测试基础连接', modelErr);
+                }
+                const testModel = models.length > 0 ? models[0] : 'gpt-3.5-turbo';
+                const response = await callAI('你是一个AI助手，回复"OK"即可。', '请回复"OK"表示连接成功。', url, key, testModel, 0.5);
+                if (response.includes('OK')) {
+                    if (models.length > 0) {
+                        updateModelDropdown(models);
+                        apiModelInput.value = models[0];
+                        state.apiModel = models[0];
+                    } else {
+                        modelDropdown.innerHTML = '';
+                        modelDropdown.style.display = 'none';
+                    }
+                    setApiStatus('ok', getI18n('statusConnected') || '连接成功 ✅');
+                    saveApiConfig();
+                } else {
+                    setApiStatus('error', getI18n('statusResponseError') || '响应异常');
+                }
+            } catch (err) {
+                setApiStatus('error', getI18n('statusConnectionFailed') || '连接失败');
+                alert(getI18n('alertTestFailed') || '测试失败：' + err.message);
+            }
+        }
+
+        function setApiStatus(status, msg) {
+            statusDot.className = 'status-dot';
+            if (status === 'loading') statusDot.classList.add('loading');
+            else if (status === 'ok') statusDot.classList.add('ok');
+            else if (status === 'error') statusDot.classList.add('error');
+            statusLabel.textContent = msg || (status === 'ok' ? getI18n('statusConnected') || '已连接' : status === 'loading' ?
+                getI18n('statusLoading') || '加载中…' : getI18n('statusNotConfigured') || '未配置');
+        }
+
+        // ================================================================
+        // 6. 配置管理
+        // ================================================================
+        function loadConfigs() {
+            try {
+                const raw = localStorage.getItem('prompt_workshop_configs');
+                if (raw) state.configs = JSON.parse(raw);
+                else state.configs = [];
+            } catch (e) { state.configs = []; }
+            updateConfigSelector();
+        }
+
+        function saveConfigs() {
+            try {
+                localStorage.setItem('prompt_workshop_configs', JSON.stringify(state.configs));
+            } catch (e) { /* ignore */ }
+        }
+
+        function updateConfigSelector() {
+            const sel = configSelector;
+            const current = state.currentConfigName;
+            sel.innerHTML = `<option value="">${getI18n('configSelectorPlaceholder') || '-- 切换 --'}</option>`;
+            state.configs.forEach(cfg => {
+                const opt = document.createElement('option');
+                opt.value = cfg.name;
+                opt.textContent = cfg.name;
+                if (cfg.name === current) opt.selected = true;
+                sel.appendChild(opt);
+            });
+            if (current) {
+                const cfg = state.configs.find(c => c.name === current);
+                if (cfg) {
+                    apiUrlInput.value = cfg.apiUrl || '';
+                    apiKeyInput.value = cfg.apiKey || '';
+                    apiModelInput.value = cfg.apiModel || '';
+                    systemPromptInput.value = cfg.systemPrompt || '';
+                    userPromptTemplateInput.value = cfg.userPromptTemplate || '';
+                    state.apiUrl = cfg.apiUrl || '';
+                    state.apiKey = cfg.apiKey || '';
+                    state.apiModel = cfg.apiModel || '';
+                    state.systemPrompt = cfg.systemPrompt || '';
+                    state.userPromptTemplate = cfg.userPromptTemplate || '';
+                }
+            }
+        }
+
+        function saveCurrentConfig() {
+            const name = configNameInput.value.trim();
+            if (!name) { alert(getI18n('alertEnterConfigName') || '请输入配置名称'); return; }
+            let model = apiModelInput.value.trim();
+            if (!model) { alert(getI18n('alertSelectModel') || '请选择或输入模型'); return; }
+            const existing = state.configs.find(c => c.name === name);
+            if (existing) {
+                const confirmText = getI18n('confirmOverwriteConfig') || `配置 "${name}" 已存在，是否覆盖？`;
+                if (!confirm(confirmText)) return;
+                existing.apiUrl = apiUrlInput.value.trim();
+                existing.apiKey = apiKeyInput.value.trim();
+                existing.apiModel = model;
+                existing.systemPrompt = systemPromptInput.value;
+                existing.userPromptTemplate = userPromptTemplateInput.value;
+            } else {
+                state.configs.push({
+                    name: name,
+                    apiUrl: apiUrlInput.value.trim(),
+                    apiKey: apiKeyInput.value.trim(),
+                    apiModel: model,
+                    systemPrompt: systemPromptInput.value,
+                    userPromptTemplate: userPromptTemplateInput.value,
+                });
+            }
+            state.currentConfigName = name;
+            state.apiModel = model;
+            saveConfigs();
+            updateConfigSelector();
+            alert(getI18n('alertConfigSaved') || `配置 "${name}" 已保存`);
+            saveApiConfig();
+        }
+
+        function deleteCurrentConfig() {
+            const name = configSelector.value;
+            if (!name) { alert(getI18n('alertSelectConfigToDelete') || '请先选择要删除的配置'); return; }
+            const confirmText = getI18n('confirmDeleteConfig') || `确定删除配置 "${name}" 吗？`;
+            if (!confirm(confirmText)) return;
+            state.configs = state.configs.filter(c => c.name !== name);
+            if (state.currentConfigName === name) {
+                state.currentConfigName = null;
+                apiUrlInput.value = '';
+                apiKeyInput.value = '';
+                apiModelInput.value = '';
+                systemPromptInput.value = '';
+                userPromptTemplateInput.value = '';
+            }
+            saveConfigs();
+            updateConfigSelector();
+            alert(getI18n('alertConfigDeleted') || '已删除');
+        }
+
+        function switchConfig() {
+            const name = configSelector.value;
+            if (!name) {
+                state.currentConfigName = null;
+                return;
+            }
+            const cfg = state.configs.find(c => c.name === name);
+            if (cfg) {
+                state.currentConfigName = name;
+                apiUrlInput.value = cfg.apiUrl || '';
+                apiKeyInput.value = cfg.apiKey || '';
+                apiModelInput.value = cfg.apiModel || '';
+                systemPromptInput.value = cfg.systemPrompt || '';
+                userPromptTemplateInput.value = cfg.userPromptTemplate || '';
+                state.apiUrl = cfg.apiUrl || '';
+                state.apiKey = cfg.apiKey || '';
+                state.apiModel = cfg.apiModel || '';
+                state.systemPrompt = cfg.systemPrompt || '';
+                state.userPromptTemplate = cfg.userPromptTemplate || '';
+                saveApiConfig();
+            }
+        }
+
+        function saveApiConfig() {
+            try {
+                localStorage.setItem('prompt_workshop_api', JSON.stringify({
+                    url: state.apiUrl,
+                    key: state.apiKey,
+                    model: state.apiModel,
+                    systemPrompt: state.systemPrompt,
+                    userPromptTemplate: state.userPromptTemplate,
+                }));
+            } catch (e) { /* ignore */ }
+        }
+
+        // ================================================================
+        // 7. 存储 & 历史
+        // ================================================================
+        function saveToLocal() {
+            try {
+                const data = {
+                    sessionId: state.sessionId,
+                    segments: state.segments,
+                    segmentIndex: state.segmentIndex,
+                    fullPrompt: state.fullPrompt,
+                    currentSegment: editor.value,
+                    history: state.history,
+                    editingIndex: state.editingIndex,
+                    customTags: state.customTags,
+                };
+                localStorage.setItem('prompt_workshop_data', JSON.stringify(data));
+            } catch (e) { /* ignore */ }
+        }
+
+        function loadFromLocal() {
+            try {
+                const raw = localStorage.getItem('prompt_workshop_data');
+                if (!raw) return false;
+                const data = JSON.parse(raw);
+                state.sessionId = data.sessionId || Date.now();
+                state.segments = data.segments || [];
+                state.segmentIndex = data.segmentIndex || 1;
+                state.fullPrompt = data.fullPrompt || '';
+                state.currentSegment = data.currentSegment || '';
+                state.history = data.history || [];
+                state.editingIndex = data.editingIndex !== undefined ? data.editingIndex : null;
+                state.customTags = data.customTags || {};
+                editor.value = state.currentSegment;
+                updatePreviews();
+                updateHistoryList();
+                return true;
+            } catch (e) { return false; }
+        }
+
+        function updateHistoryList() {
+            const list = historyList;
+            if (state.history.length === 0) {
+                const emptyText = getI18n('historyEmpty') || '还没有记录<br />完成一段提示词后自动保存';
+                list.innerHTML = `<div class="history-empty">${emptyText}</div>`;
+                return;
+            }
+            const sorted = [...state.history].sort((a, b) => b.createdAt - a.createdAt);
+            const dateFormat = state.lang === 'zh-CN' ? 'zh-CN' : 'en-US';
+            list.innerHTML = sorted.map((item) => {
+                const date = new Date(item.createdAt);
+                const dateStr = date.toLocaleString(dateFormat, { month: 'short', day: 'numeric', hour: '2-digit',
+                    minute: '2-digit' });
+                const title = item.title || (state.lang === 'zh-CN' ? '提示词' : 'Prompt');
+                const short = (item.fullPrompt || '').slice(0, 60) + (item.fullPrompt.length > 60 ? '…' : '');
+                const segmentLabel = state.lang === 'zh-CN' ? '段' : 'segments';
+                return `<div class="history-item" data-id="${item.id}" onclick="loadHistory('${item.id}')">
+                            <strong>${escapeHtml(title)}</strong>
+                            <span style="font-size:0.7rem;color:#4a6a8a;display:block;margin-top:2px;">${escapeHtml(short)}</span>
+                            <span class="date">${dateStr} · ${item.segments?.length || 0} ${segmentLabel}</span>
+                            <button class="btn-del-history" onclick="event.stopPropagation();deleteHistory('${item.id}')">✕</button>
+                        </div>`;
+            }).join('');
+        }
+
+        function saveSession() {
+            const full = state.fullPrompt;
+            if (!full.trim() && state.segments.length === 0) {
+                alert(getI18n('alertNoSegments') || '还没有任何段落，无法保存。');
+                return;
+            }
+            const titlePrompt = getI18n('promptSessionTitle') || '给这个提示词起个标题（可选）：';
+            const defaultTitle = state.lang === 'zh-CN' ? `提示词 ${state.history.length + 1}` :
+                `Prompt ${state.history.length + 1}`;
+            const title = prompt(titlePrompt, defaultTitle);
+            const entry = {
+                id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+                title: title || defaultTitle,
+                segments: [...state.segments],
+                fullPrompt: state.fullPrompt,
+                createdAt: Date.now(),
+            };
+            state.history.push(entry);
+            resetSession(false);
+            updateHistoryList();
+            saveToLocal();
+            const savedMsg = getI18n('alertSaved') || '✅ 已保存到历史记录！';
+            alert(savedMsg);
+        }
+
+        function resetSession(clearHistory = false) {
+            state.segments = [];
+            state.segmentIndex = 1;
+            state.fullPrompt = '';
+            state.currentSegment = '';
+            state.editingIndex = null;
+            editor.value = '';
+            if (clearHistory) {
+                state.history = [];
+                updateHistoryList();
+            }
+            updatePreviews();
+            saveToLocal();
+        }
+
+        function loadHistory(id) {
+            const item = state.history.find(h => h.id === id);
+            if (!item) return;
+            const confirmText = getI18n('confirmLoadHistory') ||
+                `加载 "${item.title}" 将替换当前编辑内容，确定吗？`;
+            if (!confirm(confirmText)) return;
+            state.segments = [...item.segments];
+            state.fullPrompt = item.fullPrompt;
+            state.segmentIndex = (item.segments.length || 0) + 1;
+            state.editingIndex = null;
+            editor.value = '';
+            updatePreviews();
+            document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
+            const target = document.querySelector(`.history-item[data-id="${id}"]`);
+            if (target) target.classList.add('active');
+            saveToLocal();
+        }
+
+        function deleteHistory(id) {
+            const confirmText = getI18n('confirmDeleteHistory') || '确定删除这条记录吗？';
+            if (!confirm(confirmText)) return;
+            state.history = state.history.filter(h => h.id !== id);
+            updateHistoryList();
+            saveToLocal();
+        }
+
+        function newSession() {
+            if (state.fullPrompt.trim() || editor.value.trim()) {
+                const confirmText = getI18n('confirmNewSession') || '当前有未保存的内容，新建会话将丢失。确定吗？';
+                if (!confirm(confirmText)) return;
+            }
+            resetSession(false);
+            document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
+        }
+
+        // ================================================================
+        // 8. 标签渲染
+        // ================================================================
+        function renderTags() {
+            let html = '';
+            TAG_DATA.forEach(cat => {
+                const catKey = 'cat_' + cat.type;
+                const translatedCategory = getI18n(catKey) || cat.category;
+                const catId = 'cat-' + cat.category.replace(/[^a-zA-Z0-9]/g, '');
+                const custom = state.customTags[cat.category] || [];
+                const allTags = [...cat.tags, ...custom];
+                html += `<div class="tag-category" data-cat="${catId}">
+                            <div class="cat-title">
+                                <span>${translatedCategory}</span>
+                                <span class="arrow" id="arrow-${catId}" onclick="toggleCategory('${catId}')">▼</span>
+                                <span class="add-tag-btn" onclick="addCustomTag('${cat.category}')" title="${getI18n('addCustomTagTitle') || '添加自定义标签'}">➕</span>
+                            </div>
+                            <div class="tag-grid" id="grid-${catId}">`;
+                allTags.forEach((tag, idx) => {
+                    const isCustom = idx >= cat.tags.length;
+                    const typeClassFinal = 'type-' + (cat.type || 'struct');
+                    const customClass = isCustom ? 'custom-tag' : '';
+                    const delBtn = isCustom ?
+                        `<span class="del-custom-tag" onclick="event.stopPropagation();deleteCustomTag('${cat.category}','${escapeHtml(tag.label)}')">✕</span>` :
+                        '';
+                    const descKey = 'tag_desc_' + tag.label;
+                    let desc = getI18n(descKey);
+                    if (!desc || desc === descKey) {
+                        desc = tag.desc || '自定义标签';
+                    }
+                    html += `<span class="tag-chip ${typeClassFinal} ${customClass}" 
+                                data-label="${escapeHtml(tag.label)}" 
+                                data-desc="${escapeHtml(desc)}"
+                                onclick="insertTag('${escapeHtml(tag.label)}')">
+                                ${escapeHtml(tag.label)}
+                                ${delBtn}
+                            </span>`;
+                });
+                html += `</div></div>`;
+            });
+            tagPanel.innerHTML = html;
+            document.querySelectorAll('.tag-chip').forEach(el => {
+                el.addEventListener('mouseenter', function(e) {
+                    const desc = this.dataset.desc || '无描述';
+                    const rect = this.getBoundingClientRect();
+                    globalTooltip.textContent = desc;
+                    globalTooltip.style.display = 'block';
+                    let top = rect.top - 10;
+                    let left = rect.left + rect.width / 2;
+                    const tw = globalTooltip.offsetWidth;
+                    const th = globalTooltip.offsetHeight;
+                    if (left + tw / 2 > window.innerWidth - 10) {
+                        left = window.innerWidth - 10 - tw / 2;
+                    }
+                    if (left - tw / 2 < 10) {
+                        left = 10 + tw / 2;
+                    }
+                    if (top - th < 10) {
+                        top = rect.bottom + 10;
+                    }
+                    globalTooltip.style.top = (top - th) + 'px';
+                    globalTooltip.style.left = (left - tw / 2) + 'px';
+                });
+                el.addEventListener('mouseleave', function() {
+                    globalTooltip.style.display = 'none';
+                });
+            });
+        }
+
+        function toggleCategory(catId) {
+            const grid = document.getElementById('grid-' + catId);
+            const arrow = document.getElementById('arrow-' + catId);
+            if (!grid) return;
+            grid.classList.toggle('collapsed');
+            if (arrow) arrow.classList.toggle('collapsed');
+        }
+
+        function addCustomTag(category) {
+            const labelPrompt = getI18n('addCustomLabelPrompt') || `请输入自定义标签文本 (将添加到 "${category}" 分类)：`;
+            const label = prompt(labelPrompt);
+            if (!label) return;
+            const descPrompt = getI18n('addCustomDescPrompt') || '请输入标签描述（可选）：';
+            const desc = prompt(descPrompt) || (state.lang === 'zh-CN' ? '自定义标签' : 'Custom tag');
+            const cat = TAG_DATA.find(c => c.category === category);
+            const existing = cat ? cat.tags.find(t => t.label === label) : null;
+            if (existing) {
+                const errMsg = getI18n('alertTagExists') || `标签 "${label}" 已存在，不能重复添加。`;
+                alert(errMsg);
+                return;
+            }
+            const customList = state.customTags[category] || [];
+            if (customList.find(t => t.label === label)) {
+                const errMsg = getI18n('alertCustomTagExists') || `自定义标签 "${label}" 已存在。`;
+                alert(errMsg);
+                return;
+            }
+            if (!state.customTags[category]) state.customTags[category] = [];
+            state.customTags[category].push({ label, desc });
+            saveToLocal();
+            renderTags();
+            updatePreviews();
+        }
+
+        function deleteCustomTag(category, label) {
+            const confirmText = getI18n('confirmDeleteCustomTag') || `删除自定义标签 "${label}" 吗？`;
+            if (!confirm(confirmText)) return;
+            const list = state.customTags[category];
+            if (list) {
+                state.customTags[category] = list.filter(t => t.label !== label);
+                if (state.customTags[category].length === 0) delete state.customTags[category];
+                saveToLocal();
+                renderTags();
+                updatePreviews();
+            }
+        }
+
+        // ================================================================
+        // 9. 数据导入导出
+        // ================================================================
+        function exportData() {
+            const data = {
+                version: '2.1',
+                exportedAt: new Date().toISOString(),
+                state: {
+                    sessionId: state.sessionId,
+                    segments: state.segments,
+                    segmentIndex: state.segmentIndex,
+                    fullPrompt: state.fullPrompt,
+                    currentSegment: editor.value,
+                    history: state.history,
+                    editingIndex: state.editingIndex,
+                    customTags: state.customTags,
+                },
+                api: {
+                    apiUrl: state.apiUrl,
+                    apiKey: state.apiKey,
+                    apiModel: state.apiModel,
+                    systemPrompt: state.systemPrompt,
+                    userPromptTemplate: state.userPromptTemplate,
+                },
+                configs: state.configs,
+                modelList: state.modelList,
+            };
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `prompt_workshop_backup_${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    try {
+                        const data = JSON.parse(ev.target.result);
+                        if (!data.state) {
+                            alert(getI18n('alertInvalidData') || '无效的数据文件，缺少 state 字段');
+                            return;
+                        }
+                        const s = data.state;
+                        state.sessionId = s.sessionId || Date.now();
+                        state.segments = s.segments || [];
+                        state.segmentIndex = s.segmentIndex || 1;
+                        state.fullPrompt = s.fullPrompt || '';
+                        state.currentSegment = s.currentSegment || '';
+                        state.history = s.history || [];
+                        state.editingIndex = s.editingIndex !== undefined ? s.editingIndex : null;
+                        state.customTags = s.customTags || {};
+                        editor.value = state.currentSegment;
+                        if (data.api) {
+                            state.apiUrl = data.api.apiUrl || state.apiUrl;
+                            state.apiKey = data.api.apiKey || state.apiKey;
+                            state.apiModel = data.api.apiModel || state.apiModel;
+                            state.systemPrompt = data.api.systemPrompt || state.systemPrompt;
+                            state.userPromptTemplate = data.api.userPromptTemplate || state.userPromptTemplate;
+                            apiUrlInput.value = state.apiUrl;
+                            apiKeyInput.value = state.apiKey;
+                            apiModelInput.value = state.apiModel;
+                            systemPromptInput.value = state.systemPrompt;
+                            userPromptTemplateInput.value = state.userPromptTemplate;
+                            saveApiConfig();
+                        }
+                        if (data.configs) {
+                            state.configs = data.configs;
+                            saveConfigs();
+                            updateConfigSelector();
+                        }
+                        if (data.modelList) {
+                            state.modelList = data.modelList;
+                            updateModelDropdown(data.modelList);
+                        }
+                        updatePreviews();
+                        updateHistoryList();
+                        renderTags();
+                        alert(getI18n('alertImportSuccess') || '数据导入成功！');
+                    } catch (err) {
+                        alert(getI18n('alertImportFailed') || '导入失败：' + err.message);
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        // ================================================================
+        // 10. 工具函数
+        // ================================================================
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ================================================================
+        // 11. 事件绑定 & 初始化
+        // ================================================================
+
+        editor.addEventListener('input', function() {
+            state.currentSegment = this.value;
+            updatePreviews();
+        });
+
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleExpand();
+            }
+        });
+
+        btnLangToggle.addEventListener('click', toggleLanguage);
+
+        document.getElementById('btnConfirmSegment').addEventListener('click', confirmSegment);
+        document.getElementById('btnClearSegment').addEventListener('click', clearSegment);
+        document.getElementById('btnInsertExpand').addEventListener('click', insertExpandMarker);
+        document.getElementById('btnSendChat').addEventListener('click', handleExpand);
+        document.getElementById('btnSaveSession').addEventListener('click', saveSession);
+        document.getElementById('btnNewSession').addEventListener('click', newSession);
+        document.getElementById('btnTestApi').addEventListener('click', testApi);
+        document.getElementById('btnSaveConfig').addEventListener('click', saveCurrentConfig);
+        document.getElementById('btnDeleteConfig').addEventListener('click', deleteCurrentConfig);
+        configSelector.addEventListener('change', switchConfig);
+        document.getElementById('btnExportData').addEventListener('click', exportData);
+        document.getElementById('btnImportData').addEventListener('click', importData);
+
+        apiModelInput.addEventListener('focus', function() {
+            if (state.modelList.length > 0) {
+                filterModelDropdown(this.value);
+            }
+        });
+        apiModelInput.addEventListener('input', function() {
+            if (state.modelList.length > 0) {
+                filterModelDropdown(this.value);
+            } else {
+                modelDropdown.style.display = 'none';
+            }
+        });
+        apiModelInput.addEventListener('blur', function() {
+            setTimeout(() => {
+                modelDropdown.style.display = 'none';
+            }, 200);
+        });
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.model-input-wrap')) {
+                modelDropdown.style.display = 'none';
+            }
+        });
+
+        function loadApiFromStorage() {
+            try {
+                const saved = localStorage.getItem('prompt_workshop_api');
+                if (saved) {
+                    const cfg = JSON.parse(saved);
+                    if (cfg.url) apiUrlInput.value = cfg.url;
+                    if (cfg.key) apiKeyInput.value = cfg.key;
+                    if (cfg.model) apiModelInput.value = cfg.model;
+                    if (cfg.systemPrompt) {
+                        systemPromptInput.value = cfg.systemPrompt;
+                    } else {
+                        systemPromptInput.value = state.systemPrompt;
+                    }
+                    if (cfg.userPromptTemplate) {
+                        userPromptTemplateInput.value = cfg.userPromptTemplate;
+                    } else {
+                        userPromptTemplateInput.value = state.userPromptTemplate;
+                    }
+                    state.apiUrl = cfg.url || state.apiUrl;
+                    state.apiKey = cfg.key || state.apiKey;
+                    state.apiModel = cfg.model || state.apiModel;
+                    state.systemPrompt = cfg.systemPrompt || state.systemPrompt;
+                    state.userPromptTemplate = cfg.userPromptTemplate || state.userPromptTemplate;
+                } else {
+                    systemPromptInput.value = state.systemPrompt;
+                    userPromptTemplateInput.value = state.userPromptTemplate;
+                    saveApiConfig();
+                }
+            } catch (e) { /* ignore */ }
+        }
+        loadApiFromStorage();
+
+        ['apiUrl', 'apiKey', 'systemPrompt', 'userPromptTemplate'].forEach(id => {
+            document.getElementById(id).addEventListener('change', function() {
+                if (id === 'apiUrl') state.apiUrl = this.value.trim();
+                if (id === 'apiKey') state.apiKey = this.value.trim();
+                if (id === 'systemPrompt') state.systemPrompt = this.value;
+                if (id === 'userPromptTemplate') state.userPromptTemplate = this.value;
+                saveApiConfig();
+            });
+        });
+        apiModelInput.addEventListener('change', function() {
+            state.apiModel = this.value.trim();
+            saveApiConfig();
+        });
+
+        loadConfigs();
+        loadLanguagePreference();
+        const loaded = loadFromLocal();
+        if (!loaded || (!state.fullPrompt && !editor.value)) {
+            const defaultPrompt = state.lang === 'zh-CN' ?
+                `[Shot 1] 实拍风格，电影感，一个中远景镜头框住日出前，一位面包师正在打开街边小面包店的卷帘门。镜头以小幅度、慢速推近，中年面包师用平静、略带沙哑的声音 (S1) 把一条新鲜的面包放在木质柜台上，说道：<d>[English] First batch of the morning.</d>` :
+                `[Shot 1] Live-action style, cinematic, a medium-wide shot frames the pre-dawn scene as a baker opens the shutter of a small street bakery. The camera slowly zooms in with a slight motion, the middle-aged baker (S1) places a fresh loaf on the wooden counter with a calm, slightly husky voice, saying: <d>[English] First batch of the morning.</d>`;
+            editor.value = defaultPrompt;
+            state.currentSegment = editor.value;
+            updatePreviews();
+        }
+
+        renderTags();
+        updateHistoryList();
+        setApiStatus(state.apiKey ? 'ok' : 'idle', state.apiKey ? getI18n('statusConfigured') || '已配置' : getI18n(
+            'statusNotConfigured') || '未配置');
+        setI18nAttributes();
+
+        // 暴露全局
+        window.insertTag = insertTag;
+        window.toggleCategory = toggleCategory;
+        window.loadHistory = loadHistory;
+        window.deleteHistory = deleteHistory;
+        window.confirmSegment = confirmSegment;
+        window.clearSegment = clearSegment;
+        window.saveSession = saveSession;
+        window.newSession = newSession;
+        window.handleExpand = handleExpand;
+        window.insertExpandMarker = insertExpandMarker;
+        window.testApi = testApi;
+        window.escapeHtml = escapeHtml;
+        window.addCustomTag = addCustomTag;
+        window.deleteCustomTag = deleteCustomTag;
+        window.exportData = exportData;
+        window.importData = importData;
+        window.toggleLanguage = toggleLanguage;
+
+        console.log('🎬 AI视频提示词工坊 v2.1 已启动！ (双语支持)');
+        console.log(`🌐 当前语言: ${state.lang}`);
+    </script>
+</body>
+</html>

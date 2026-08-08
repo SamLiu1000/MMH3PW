@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Minimax H3 Prompt Writer and Video Prompt Writing Guide">
+<title>Minimax H3 Prompt Writer · Prompt Guide</title>
+<style>
+    :root {
+        --topbar-height: 48px;
+        --divider-width: 8px;
+        --bg: #eef3f9;
+        --panel: #ffffff;
+        --border: #d9e2ee;
+        --text: #15263a;
+        --muted: #71839a;
+        --accent: #1f5b9e;
+        --accent-soft: #e8f1fc;
+        --divider: #d1dce9;
+        --divider-hover: #9bb4cf;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                     Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body.resizing,
+    body.resizing * {
+        cursor: col-resize !important;
+        user-select: none !important;
+    }
+
+    .shell {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    /* Top navigation */
+    .topbar {
+        height: var(--topbar-height);
+        min-height: var(--topbar-height);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0 12px 0 16px;
+        background: rgba(255,255,255,.96);
+        border-bottom: 1px solid var(--border);
+        z-index: 100;
+    }
+
+    .brand {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+        gap: 9px;
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .brand-mark {
+        width: 25px;
+        height: 25px;
+        display: grid;
+        place-items: center;
+        border-radius: 7px;
+        background: var(--accent);
+        color: white;
+        font-size: 12px;
+        font-weight: 800;
+        box-shadow: 0 2px 7px rgba(31,91,158,.2);
+    }
+
+    .brand-subtitle {
+        color: var(--muted);
+        font-weight: 500;
+        font-size: 11px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .top-spacer {
+        flex: 1;
+    }
+
+    .language-switcher {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        background: #f6f9fc;
+        gap: 2px;
+    }
+
+    .lang-btn {
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        border-radius: 6px;
+        padding: 5px 10px;
+        font-size: 11px;
+        font-weight: 650;
+        cursor: pointer;
+        transition: .15s ease;
+    }
+
+    .lang-btn:hover {
+        color: var(--text);
+        background: #edf3f9;
+    }
+
+    .lang-btn.active {
+        color: var(--accent);
+        background: white;
+        box-shadow: 0 1px 4px rgba(25,55,90,.1);
+    }
+
+    .split-label {
+        color: var(--muted);
+        font-size: 10px;
+        white-space: nowrap;
+    }
+
+    /* Main split area */
+    .workspace {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .pane {
+        position: relative;
+        min-width: 0;
+        min-height: 0;
+        overflow: hidden;
+        background: var(--panel);
+    }
+
+    .tool-pane {
+        width: 55%;
+    }
+
+    .guide-pane {
+        width: 45%;
+    }
+
+    .pane iframe {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        background: white;
+    }
+
+    /* Draggable divider */
+    .divider {
+        width: var(--divider-width);
+        min-width: var(--divider-width);
+        position: relative;
+        flex: 0 0 var(--divider-width);
+        background: var(--divider);
+        cursor: col-resize;
+        z-index: 20;
+        transition: background .12s ease;
+    }
+
+    .divider:hover,
+    .divider.dragging {
+        background: var(--divider-hover);
+    }
+
+    .divider::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 2px;
+        height: 34px;
+        transform: translate(-50%, -50%);
+        border-radius: 2px;
+        background:
+            radial-gradient(circle, #8ea5bd 1.1px, transparent 1.2px)
+            center / 2px 6px repeat-y;
+        opacity: .8;
+    }
+
+    .divider::after {
+        content: "↔";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        display: grid;
+        place-items: center;
+        width: 20px;
+        height: 20px;
+        border-radius: 6px;
+        background: rgba(255,255,255,.9);
+        color: #6f8299;
+        font-size: 10px;
+        opacity: 0;
+        transition: opacity .12s ease;
+        box-shadow: 0 1px 4px rgba(25,55,90,.1);
+    }
+
+    .divider:hover::after,
+    .divider.dragging::after {
+        opacity: 1;
+    }
+
+    /* Tiny overlay labels make the function clear without consuming layout. */
+    .pane-badge {
+        position: absolute;
+        left: 10px;
+        top: 8px;
+        z-index: 10;
+        pointer-events: none;
+        padding: 4px 7px;
+        border: 1px solid rgba(215,225,237,.85);
+        border-radius: 6px;
+        background: rgba(255,255,255,.88);
+        color: #71839a;
+        font-size: 9px;
+        opacity: 0;
+        transition: opacity .15s ease;
+        backdrop-filter: blur(5px);
+    }
+
+    .pane:hover .pane-badge {
+        opacity: 1;
+    }
+
+    .status {
+        color: var(--muted);
+        font-size: 10px;
+        white-space: nowrap;
+    }
+
+    @media (max-width: 800px) {
+        .topbar {
+            padding-left: 10px;
+            padding-right: 8px;
+        }
+
+        .brand-subtitle,
+        .split-label,
+        .status {
+            display: none;
+        }
+
+        .tool-pane {
+            width: 50%;
+        }
+
+        .guide-pane {
+            width: 50%;
+        }
+
+        .lang-btn {
+            padding: 5px 8px;
+        }
+    }
+</style>
+</head>
+
+<body>
+<div class="shell">
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-mark">H3</div>
+            <span>Minimax H3 Prompt Writer</span>
+            <span class="brand-subtitle">Prompt Writer + Guide</span>
+        </div>
+
+        <div class="top-spacer"></div>
+
+        <span class="status" id="sizeStatus">55% / 45%</span>
+
+        <div class="language-switcher" aria-label="Report language">
+            <button class="lang-btn active" id="zhBtn" type="button">中文</button>
+            <button class="lang-btn" id="enBtn" type="button">EN</button>
+        </div>
+    </header>
+
+    <main class="workspace" id="workspace">
+        <section class="pane tool-pane" id="toolPane">
+            <div class="pane-badge">Web Tool</div>
+            <iframe
+                id="toolFrame"
+                title="Minimax H3 Prompt Writer"
+                loading="eager"
+                allow="clipboard-read; clipboard-write"
+            ></iframe>
+        </section>
+
+        <div
+            class="divider"
+            id="divider"
+            role="separator"
+            aria-label="Resize panels"
+            aria-orientation="vertical"
+            tabindex="0"
+        ></div>
+
+        <section class="pane guide-pane" id="guidePane">
+            <div class="pane-badge">Prompt Guide</div>
+            <iframe
+                id="guideFrame"
+                title="Video Prompt Writing Guide"
+                loading="eager"
+            ></iframe>
+        </section>
+    </main>
+</div>
+
+<script>
+(() => {
+    "use strict";
+
+    // These files are kept separate from index.html.
+    // encodeURI allows spaces and Unicode filenames to work on GitHub Pages.
+    const FILES = {
+        tool: "Minimax H3 Prompt Writer-编写器.html",
+        zh: "视频提示词编写指南-五岁版.html",
+        en: "Video Prompt Writing Guide – Kid‑Friendly Edition.html"
+    };
+
+    const STORAGE_KEY = "h3-prompt-writer-layout-v1";
+    const MIN_LEFT = 30;
+    const MAX_LEFT = 75;
+
+    const workspace = document.getElementById("workspace");
+    const toolPane = document.getElementById("toolPane");
+    const guidePane = document.getElementById("guidePane");
+    const divider = document.getElementById("divider");
+    const toolFrame = document.getElementById("toolFrame");
+    const guideFrame = document.getElementById("guideFrame");
+    const zhBtn = document.getElementById("zhBtn");
+    const enBtn = document.getElementById("enBtn");
+    const sizeStatus = document.getElementById("sizeStatus");
+
+    let leftPercent = 55;
+    let currentLanguage = "zh";
+    let dragging = false;
+
+    function fileUrl(filename) {
+        return encodeURI(filename);
+    }
+
+    function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+    }
+
+    function applyLayout(percent, save = true) {
+        leftPercent = clamp(Number(percent) || 55, MIN_LEFT, MAX_LEFT);
+
+        // Percentages are calculated against the workspace excluding the divider.
+        toolPane.style.width = leftPercent + "%";
+        guidePane.style.width = (100 - leftPercent) + "%";
+
+        sizeStatus.textContent =
+            Math.round(leftPercent) + "% / " +
+            Math.round(100 - leftPercent) + "%";
+
+        divider.setAttribute("aria-valuenow", String(Math.round(leftPercent)));
+
+        if (save) {
+            try {
+                localStorage.setItem(STORAGE_KEY, String(leftPercent));
+            } catch (_) {}
+        }
+    }
+
+    function setLanguage(language) {
+        currentLanguage = language === "en" ? "en" : "zh";
+
+        guideFrame.src = fileUrl(
+            currentLanguage === "en" ? FILES.en : FILES.zh
+        );
+
+        zhBtn.classList.toggle("active", currentLanguage === "zh");
+        enBtn.classList.toggle("active", currentLanguage === "en");
+
+        zhBtn.setAttribute("aria-pressed", currentLanguage === "zh");
+        enBtn.setAttribute("aria-pressed", currentLanguage === "en");
+
+        try {
+            localStorage.setItem("h3-prompt-guide-language-v1", currentLanguage);
+        } catch (_) {}
+    }
+
+    function pointerPositionToPercent(clientX) {
+        const rect = workspace.getBoundingClientRect();
+        const dividerWidth = divider.getBoundingClientRect().width;
+        const usableWidth = Math.max(1, rect.width - dividerWidth);
+        const x = clamp(clientX - rect.left, 0, usableWidth);
+        return (x / usableWidth) * 100;
+    }
+
+    function beginDrag(event) {
+        if (event.button !== undefined && event.button !== 0) return;
+
+        dragging = true;
+        divider.classList.add("dragging");
+        document.body.classList.add("resizing");
+
+        if (divider.setPointerCapture && event.pointerId !== undefined) {
+            try {
+                divider.setPointerCapture(event.pointerId);
+            } catch (_) {}
+        }
+
+        updateDrag(event);
+    }
+
+    function updateDrag(event) {
+        if (!dragging) return;
+        applyLayout(pointerPositionToPercent(event.clientX));
+    }
+
+    function endDrag() {
+        if (!dragging) return;
+        dragging = false;
+        divider.classList.remove("dragging");
+        document.body.classList.remove("resizing");
+        applyLayout(leftPercent, true);
+    }
+
+    // Pointer events work for mouse and touch-enabled devices.
+    divider.addEventListener("pointerdown", beginDrag);
+    divider.addEventListener("pointermove", updateDrag);
+    divider.addEventListener("pointerup", endDrag);
+    divider.addEventListener("pointercancel", endDrag);
+
+    // Keyboard accessibility: arrows resize the split.
+    divider.addEventListener("keydown", (event) => {
+        let next = leftPercent;
+
+        if (event.key === "ArrowLeft") {
+            next -= 2;
+        } else if (event.key === "ArrowRight") {
+            next += 2;
+        } else if (event.key === "Home") {
+            next = MIN_LEFT;
+        } else if (event.key === "End") {
+            next = MAX_LEFT;
+        } else {
+            return;
+        }
+
+        event.preventDefault();
+        applyLayout(next, true);
+    });
+
+    zhBtn.addEventListener("click", () => setLanguage("zh"));
+    enBtn.addEventListener("click", () => setLanguage("en"));
+
+    // Restore the user's previous split width and report language.
+    try {
+        const savedWidth = parseFloat(localStorage.getItem(STORAGE_KEY));
+        if (Number.isFinite(savedWidth)) {
+            leftPercent = savedWidth;
+        }
+
+        const savedLanguage =
+            localStorage.getItem("h3-prompt-guide-language-v1");
+        if (savedLanguage === "en") {
+            currentLanguage = "en";
+        }
+    } catch (_) {}
+
+    // Initial load.
+    applyLayout(leftPercent, false);
+    toolFrame.src = fileUrl(FILES.tool);
+    setLanguage(currentLanguage);
+})();
+</script>
+</body>
+</html>
