@@ -97,6 +97,49 @@
         flex: 1;
     }
 
+    /* 展开按钮组 */
+    .expand-buttons {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        padding: 3px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        background: #f6f9fc;
+    }
+
+    .expand-btn {
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        border-radius: 6px;
+        padding: 5px 8px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: .15s ease;
+        white-space: nowrap;
+        line-height: 1;
+    }
+
+    .expand-btn:hover {
+        color: var(--text);
+        background: #edf3f9;
+    }
+
+    .expand-btn.active {
+        color: var(--accent);
+        background: white;
+        box-shadow: 0 1px 4px rgba(25,55,90,.1);
+    }
+
+    .expand-divider {
+        width: 1px;
+        height: 18px;
+        background: var(--border);
+        flex-shrink: 0;
+        margin: 0 2px;
+    }
+
     .language-switcher {
         display: inline-flex;
         align-items: center;
@@ -143,6 +186,7 @@
         display: flex;
         width: 100%;
         overflow: hidden;
+        transition: none;
     }
 
     .pane {
@@ -151,14 +195,48 @@
         min-height: 0;
         overflow: hidden;
         background: var(--panel);
+        transition: none;
     }
 
     .tool-pane {
         width: 55%;
+        flex-shrink: 0;
     }
 
     .guide-pane {
         width: 45%;
+        flex-shrink: 0;
+    }
+
+    /* 完全展开模式 */
+    .workspace.expand-left .tool-pane {
+        width: 100% !important;
+        flex-shrink: 1 !important;
+    }
+
+    .workspace.expand-left .guide-pane {
+        width: 0 !important;
+        flex-shrink: 0 !important;
+        overflow: hidden !important;
+    }
+
+    .workspace.expand-left .divider {
+        display: none !important;
+    }
+
+    .workspace.expand-right .tool-pane {
+        width: 0 !important;
+        flex-shrink: 0 !important;
+        overflow: hidden !important;
+    }
+
+    .workspace.expand-right .guide-pane {
+        width: 100% !important;
+        flex-shrink: 1 !important;
+    }
+
+    .workspace.expand-right .divider {
+        display: none !important;
     }
 
     .pane iframe {
@@ -276,6 +354,11 @@
         .lang-btn {
             padding: 5px 8px;
         }
+
+        .expand-btn {
+            padding: 5px 8px;
+            font-size: 13px;
+        }
     }
 </style>
 </head>
@@ -290,6 +373,14 @@
         </div>
 
         <div class="top-spacer"></div>
+
+        <!-- 展开按钮组 - 纯图标 -->
+        <div class="expand-buttons" aria-label="展开模式切换">
+            <button class="expand-btn" id="expandLeftBtn" type="button" title="只显示左侧 Prompt Writer">◀</button>
+            <button class="expand-btn" id="expandRightBtn" type="button" title="只显示右侧 Prompt Guide">▶</button>
+            <div class="expand-divider"></div>
+            <button class="expand-btn active" id="expandResetBtn" type="button" title="恢复分屏模式">⊞</button>
+        </div>
 
         <span class="status" id="sizeStatus">55% / 45%</span>
 
@@ -356,9 +447,15 @@
     const enBtn = document.getElementById("enBtn");
     const sizeStatus = document.getElementById("sizeStatus");
 
+    // 展开按钮
+    const expandLeftBtn = document.getElementById("expandLeftBtn");
+    const expandRightBtn = document.getElementById("expandRightBtn");
+    const expandResetBtn = document.getElementById("expandResetBtn");
+
     let leftPercent = 55;
     let currentLanguage = "zh";
     let dragging = false;
+    let expandMode = null; // null | 'left' | 'right'
 
     function fileUrl(filename) {
         return encodeURI(filename);
@@ -368,18 +465,50 @@
         return Math.min(max, Math.max(min, value));
     }
 
+    function updateExpandButtons(mode) {
+        expandLeftBtn.classList.toggle("active", mode === "left");
+        expandRightBtn.classList.toggle("active", mode === "right");
+        expandResetBtn.classList.toggle("active", mode === null);
+    }
+
+    function setExpandMode(mode) {
+        expandMode = mode;
+
+        // 先移除所有展开类
+        workspace.classList.remove("expand-left", "expand-right");
+
+        if (mode === "left") {
+            workspace.classList.add("expand-left");
+            sizeStatus.textContent = "← 100%";
+        } else if (mode === "right") {
+            workspace.classList.add("expand-right");
+            sizeStatus.textContent = "100% →";
+        } else {
+            // 恢复分屏
+            applyLayout(leftPercent, false);
+            sizeStatus.textContent =
+                Math.round(leftPercent) + "% / " +
+                Math.round(100 - leftPercent) + "%";
+            divider.setAttribute("aria-valuenow", String(Math.round(leftPercent)));
+        }
+
+        updateExpandButtons(mode);
+    }
+
     function applyLayout(percent, save = true) {
         leftPercent = clamp(Number(percent) || 55, MIN_LEFT, MAX_LEFT);
 
-        // Percentages are calculated against the workspace excluding the divider.
-        toolPane.style.width = leftPercent + "%";
-        guidePane.style.width = (100 - leftPercent) + "%";
+        // 只有在非展开模式下才应用布局
+        if (expandMode === null) {
+            toolPane.style.width = leftPercent + "%";
+            guidePane.style.width = (100 - leftPercent) + "%";
 
-        sizeStatus.textContent =
-            Math.round(leftPercent) + "% / " +
-            Math.round(100 - leftPercent) + "%";
+            sizeStatus.textContent =
+                Math.round(leftPercent) + "% / " +
+                Math.round(100 - leftPercent) + "%";
 
-        divider.setAttribute("aria-valuenow", String(Math.round(leftPercent)));
+            divider.setAttribute("aria-valuenow", String(Math.round(leftPercent)));
+        }
 
         if (save) {
             try {
@@ -416,6 +545,8 @@
 
     function beginDrag(event) {
         if (event.button !== undefined && event.button !== 0) return;
+        // 展开模式下禁止拖动
+        if (expandMode !== null) return;
 
         dragging = true;
         divider.classList.add("dragging");
@@ -432,6 +563,7 @@
 
     function updateDrag(event) {
         if (!dragging) return;
+        if (expandMode !== null) return;
         applyLayout(pointerPositionToPercent(event.clientX));
     }
 
@@ -451,6 +583,8 @@
 
     // Keyboard accessibility: arrows resize the split.
     divider.addEventListener("keydown", (event) => {
+        if (expandMode !== null) return;
+
         let next = leftPercent;
 
         if (event.key === "ArrowLeft") {
@@ -467,6 +601,29 @@
 
         event.preventDefault();
         applyLayout(next, true);
+    });
+
+    // 展开按钮事件
+    expandLeftBtn.addEventListener("click", () => {
+        if (expandMode === "left") {
+            setExpandMode(null);
+        } else {
+            setExpandMode("left");
+        }
+    });
+
+    expandRightBtn.addEventListener("click", () => {
+        if (expandMode === "right") {
+            setExpandMode(null);
+        } else {
+            setExpandMode("right");
+        }
+    });
+
+    expandResetBtn.addEventListener("click", () => {
+        setExpandMode(null);
+        // 确保布局正确
+        applyLayout(leftPercent, false);
     });
 
     zhBtn.addEventListener("click", () => setLanguage("zh"));
@@ -490,6 +647,7 @@
     applyLayout(leftPercent, false);
     toolFrame.src = fileUrl(FILES.tool);
     setLanguage(currentLanguage);
+    setExpandMode(null); // 确保初始状态正确
 })();
 </script>
 </body>
