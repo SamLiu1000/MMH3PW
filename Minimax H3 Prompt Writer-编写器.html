@@ -223,13 +223,12 @@
             display: flex;
             flex-direction: column;
             min-height: 0;
-            gap: 4px;
         }
 
         /* 完整预览段落列表：占主要部分 */
         .preview-full-wrap {
-            flex: 6;
-            min-height: 100px;
+            flex: 3 1 0;
+            min-height: 60px;
             background: #ffffff;
             border-radius: 12px;
             border: 1px solid #e2eaf5;
@@ -289,11 +288,10 @@
 
         /* 当前段落预览（小条） */
         .preview-current {
-            flex-shrink: 0;
-            max-height: 36px;
+            flex: 4 1 0;
             background: #f0f5fd;
             border-radius: 8px;
-            padding: 2px 12px;
+            padding: 6px 12px;
             border: 1px solid #e2eaf5;
             overflow-y: auto;
             font-size: 0.7rem;
@@ -310,8 +308,8 @@
 
         /* 编辑器输入框 */
         .editor-textarea-wrap {
-            flex: 2;
-            min-height: 50px;
+            flex: 3 1 0;
+            min-height: 40px;
             display: flex;
             flex-direction: column;
         }
@@ -342,8 +340,8 @@
 
         /* 聊天扩写区域：正常高度 */
         .chat-area {
-            flex: 1.2;
-            min-height: 44px;
+            flex: 1 1 0;
+            min-height: 36px;
             display: flex;
             gap: 8px;
             padding-top: 4px;
@@ -416,6 +414,69 @@
             50% {
                 opacity: 0.3;
             }
+        }
+
+        /* ===== 编辑器区域可拖拽分隔条 ===== */
+        body.resizing,
+        body.resizing * {
+            cursor: row-resize !important;
+            user-select: none !important;
+        }
+
+        .editor-area-divider {
+            flex: 0 0 8px;
+            min-height: 8px;
+            position: relative;
+            background: #d1dce9;
+            cursor: row-resize;
+            z-index: 20;
+            transition: background .12s ease;
+            border-radius: 2px;
+            margin: 0;
+        }
+
+        .editor-area-divider:hover,
+        .editor-area-divider.dragging {
+            background: #9bb4cf;
+        }
+
+        .editor-area-divider::before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 34px;
+            height: 2px;
+            transform: translate(-50%, -50%);
+            border-radius: 2px;
+            background:
+                radial-gradient(circle, #8ea5bd 1.1px, transparent 1.2px)
+                center / 6px 2px repeat-x;
+            opacity: .8;
+        }
+
+        .editor-area-divider::after {
+            content: "↕";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: grid;
+            place-items: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+            background: rgba(255,255,255,.9);
+            color: #6f8299;
+            font-size: 10px;
+            opacity: 0;
+            transition: opacity .12s ease;
+            box-shadow: 0 1px 4px rgba(25,55,90,.1);
+        }
+
+        .editor-area-divider:hover::after,
+        .editor-area-divider.dragging::after {
+            opacity: 1;
         }
 
         /* ===== 右侧：API + 标签 ===== */
@@ -760,18 +821,22 @@
 
         /* ===== 滚动条 ===== */
         ::-webkit-scrollbar {
-            width: 4px;
-            height: 4px;
+            width: 10px;
+            height: 10px;
         }
         ::-webkit-scrollbar-track {
             background: transparent;
+            border: solid 2px transparent;
         }
         ::-webkit-scrollbar-thumb {
             background: #c8d6e8;
             border-radius: 10px;
+            border: 2px solid transparent;
+            background-clip: content-box;
         }
         ::-webkit-scrollbar-thumb:hover {
             background: #a8bcd4;
+            background-clip: content-box;
         }
 
         /* ===== 响应式 ===== */
@@ -817,7 +882,14 @@
                 min-height: 80px;
             }
             .preview-full-wrap {
-                min-height: 150px;
+                min-height: 100px;
+            }
+            .editor-area-divider {
+                cursor: default;
+            }
+            .editor-area-divider::before,
+            .editor-area-divider::after {
+                display: none;
             }
         }
     </style>
@@ -849,16 +921,20 @@
             </div>
 
             <!-- 编辑器区域 -->
-            <div class="editor-area">
+            <div class="editor-area" id="editorArea">
                 <!-- 完整预览段落列表 -->
                 <div class="preview-full-wrap" id="previewFull">
                     <span class="empty-hint" data-i18n="previewFullEmpty">所有已确认的段落将显示在这里，可编辑或删除</span>
                 </div>
 
+                <div class="editor-area-divider" id="divider0" role="separator" aria-orientation="horizontal" tabindex="0" aria-label="调整完整预览与当前预览之间的分割"></div>
+
                 <!-- 当前段落预览 -->
                 <div class="preview-current" id="previewCurrent">
                     <span class="empty-hint" data-i18n="previewCurrentEmpty">⚡ 当前段落预览将显示在这里</span>
                 </div>
+
+                <div class="editor-area-divider" id="divider1" role="separator" aria-orientation="horizontal" tabindex="0" aria-label="调整当前预览与编辑器之间的分割"></div>
 
                 <!-- 编辑器输入框 -->
                 <div class="editor-textarea-wrap">
@@ -870,6 +946,8 @@
                     </div>
                     <textarea class="editor-textarea" id="editorText" placeholder="输入或点击右侧标签插入内容… 例如：[Shot 1] 实拍风格，电影感，一个中远景镜头…"></textarea>
                 </div>
+
+                <div class="editor-area-divider" id="divider2" role="separator" aria-orientation="horizontal" tabindex="0" aria-label="调整编辑器与扩写输入区之间的分割"></div>
 
                 <!-- 聊天扩写 -->
                 <div class="chat-area">
@@ -1389,6 +1467,30 @@
 
         const globalTooltip = $('global-tooltip');
         const btnLangToggle = $('btnLangToggle');
+
+        // ================================================================
+        // 3b. 分隔条配置 & DOM 引用
+        // ================================================================
+        const DIVIDER_LAYOUT_KEY = 'h3-editor-layout-v1';
+        const TOTAL_FLEX = 11;
+        const SECTION_MIN_FLEX = 1;
+        const SECTION_MAX_FLEX = 6;
+
+        const editorArea = document.getElementById('editorArea');
+        const dividers = [
+            document.getElementById('divider0'),
+            document.getElementById('divider1'),
+            document.getElementById('divider2')
+        ];
+        const sections = [
+            previewFull,
+            previewCurrent,
+            document.querySelector('.editor-textarea-wrap'),
+            document.querySelector('.chat-area')
+        ];
+
+        let flexValues = [3, 4, 3, 1];
+        let draggingDivider = -1;
 
         // ================================================================
         // 4. 国际化 (i18n) 核心
@@ -2284,6 +2386,148 @@
         }
 
         // ================================================================
+        // 8b. 分隔条拖拽逻辑
+        // ================================================================
+
+        function clamp(v, min, max) {
+            return Math.min(max, Math.max(min, v));
+        }
+
+        function applyDividerLayout(save) {
+            sections.forEach((el, i) => {
+                el.style.flex = flexValues[i] + ' 1 0';
+            });
+
+            let cumulativePct = 0;
+            for (let i = 0; i < 3; i++) {
+                cumulativePct += flexValues[i] / TOTAL_FLEX * 100;
+                dividers[i].setAttribute('aria-valuenow', Math.round(cumulativePct));
+            }
+
+            if (save) {
+                saveDividerLayout();
+            }
+        }
+
+        function saveDividerLayout() {
+            try {
+                localStorage.setItem(DIVIDER_LAYOUT_KEY, JSON.stringify(flexValues));
+            } catch (_) {}
+        }
+
+        function loadDividerLayout() {
+            try {
+                const saved = localStorage.getItem(DIVIDER_LAYOUT_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed) && parsed.length === 4 &&
+                        parsed.every(v => Number.isFinite(v) && v > 0)) {
+                        const sum = parsed.reduce((a, b) => a + b, 0);
+                        if (Math.abs(sum - TOTAL_FLEX) < 0.01) {
+                            flexValues = parsed;
+                        }
+                    }
+                }
+            } catch (_) {}
+        }
+
+        function calcFlexFromPointer(dividerIndex, clientY) {
+            const rect = editorArea.getBoundingClientRect();
+            const sectionsHeight = rect.height - 3 * 8;
+            if (sectionsHeight <= 0) return [flexValues[dividerIndex], flexValues[dividerIndex + 1]];
+
+            const pairTotal = flexValues[dividerIndex] + flexValues[dividerIndex + 1];
+            const pairHeightPx = pairTotal / TOTAL_FLEX * sectionsHeight;
+
+            let topOfSection = 0;
+            for (let i = 0; i < dividerIndex; i++) {
+                topOfSection += flexValues[i] / TOTAL_FLEX * sectionsHeight + 8;
+            }
+
+            const yInPair = clientY - rect.top - topOfSection;
+            const fraction = clamp(yInPair / pairHeightPx, 0, 1);
+
+            let newI = fraction * pairTotal;
+            let newI1 = pairTotal - newI;
+
+            if (newI < SECTION_MIN_FLEX) {
+                newI = SECTION_MIN_FLEX;
+                newI1 = pairTotal - SECTION_MIN_FLEX;
+            } else if (newI > SECTION_MAX_FLEX) {
+                newI = SECTION_MAX_FLEX;
+                newI1 = pairTotal - SECTION_MAX_FLEX;
+            }
+            if (newI1 < SECTION_MIN_FLEX) {
+                newI1 = SECTION_MIN_FLEX;
+                newI = pairTotal - SECTION_MIN_FLEX;
+            } else if (newI1 > SECTION_MAX_FLEX) {
+                newI1 = SECTION_MAX_FLEX;
+                newI = pairTotal - SECTION_MAX_FLEX;
+            }
+
+            return [clamp(newI, SECTION_MIN_FLEX, SECTION_MAX_FLEX),
+                    clamp(newI1, SECTION_MIN_FLEX, SECTION_MAX_FLEX)];
+        }
+
+        function beginDividerDrag(index, event) {
+            if (event.button !== 0) return;
+            draggingDivider = index;
+            dividers[index].classList.add('dragging');
+            document.body.classList.add('resizing');
+
+            if (dividers[index].setPointerCapture && event.pointerId !== undefined) {
+                try {
+                    dividers[index].setPointerCapture(event.pointerId);
+                } catch (_) {}
+            }
+
+            const [newI, newI1] = calcFlexFromPointer(index, event.clientY);
+            flexValues[index] = newI;
+            flexValues[index + 1] = newI1;
+            applyDividerLayout(false);
+        }
+
+        function updateDividerDrag(event) {
+            if (draggingDivider < 0) return;
+            const [newI, newI1] = calcFlexFromPointer(draggingDivider, event.clientY);
+            flexValues[draggingDivider] = newI;
+            flexValues[draggingDivider + 1] = newI1;
+            applyDividerLayout(false);
+        }
+
+        function endDividerDrag() {
+            if (draggingDivider < 0) return;
+            dividers[draggingDivider].classList.remove('dragging');
+            document.body.classList.remove('resizing');
+            draggingDivider = -1;
+            applyDividerLayout(true);
+        }
+
+        function handleDividerKeydown(index, event) {
+            let step = 0;
+            if (event.key === 'ArrowUp') {
+                step = -1;
+            } else if (event.key === 'ArrowDown') {
+                step = 1;
+            } else if (event.key === 'Home') {
+                step = -(flexValues[index] - SECTION_MIN_FLEX);
+            } else if (event.key === 'End') {
+                step = flexValues[index + 1] - SECTION_MIN_FLEX;
+            } else {
+                return;
+            }
+            event.preventDefault();
+
+            const clampedStep = clamp(step,
+                -(flexValues[index] - SECTION_MIN_FLEX),
+                flexValues[index + 1] - SECTION_MIN_FLEX);
+
+            flexValues[index] -= clampedStep;
+            flexValues[index + 1] += clampedStep;
+            applyDividerLayout(true);
+        }
+
+        // ================================================================
         // 9. 数据导入导出
         // ================================================================
         function exportData() {
@@ -2422,6 +2666,15 @@
         document.getElementById('btnExportData').addEventListener('click', exportData);
         document.getElementById('btnImportData').addEventListener('click', importData);
 
+        // Divider drag events
+        dividers.forEach((div, i) => {
+            div.addEventListener('pointerdown', (e) => beginDividerDrag(i, e));
+            div.addEventListener('pointermove', updateDividerDrag);
+            div.addEventListener('pointerup', endDividerDrag);
+            div.addEventListener('pointercancel', endDividerDrag);
+            div.addEventListener('keydown', (e) => handleDividerKeydown(i, e));
+        });
+
         apiModelInput.addEventListener('focus', function() {
             if (state.modelList.length > 0) {
                 filterModelDropdown(this.value);
@@ -2502,6 +2755,10 @@
             state.currentSegment = editor.value;
             updatePreviews();
         }
+
+        // 分隔条初始化
+        loadDividerLayout();
+        applyDividerLayout(false);
 
         renderTags();
         updateHistoryList();

@@ -50,6 +50,25 @@
             border-radius: 10px;
         }
 
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+            border: solid 2px transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c8d6e8;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8bcd4;
+            background-clip: content-box;
+        }
+
         .toc-title {
             font-size: 0.75rem;
             text-transform: uppercase;
